@@ -199,17 +199,17 @@ Append an override before the generation loop, for example:
 
 set_event_label_pos() within the generator also retains srt, cex, adj_x, adj_y,
 col_text, and label controls. Further manual calls belong after the adjustment
-loop and before plotting. OPU still excludes E16 by classifying it as CPU and
-uses "OPEC+ cuts" for E20. Event windows, labels, offsets, market order, colors,
-line widths, fonts, axes, margins, shading, and PDF dimensions retain their
-existing values. Each shock uses common RI and RD axis ranges across markets.
+loop and before plotting. The revised CPU list excludes E16 (Indonesia coal ban). OPU
+uses "OPEC+ cuts" for E20. CPU event names are reflowed at a smaller label size (CEX_EVENT=1.15) on two
+rows to accommodate the revised wording. CPU offsets are updated accordingly;
+GPR/OPU offsets and all data-panel settings are retained. Each shock uses common RI and RD axis ranges across markets.
 
 7. STATIC VERIFICATION
 ----------------------
 Both scripts passed R syntax parsing. After accounting for the documented
 project/input/output path changes and directory setup, the remaining executable
-syntax trees match the previous versions. Statistical expressions, plotting
-settings, labels, event adjustments, and their order are retained.
+syntax trees match the previous versions. Statistical expressions and data-panel settings are retained. The later CPU
+update changes the event membership, wording, label size and offsets only.
 The horizon workbooks were copied byte for byte from the existing analysis.
 Existing reference PDFs were relocated without changing their contents.
 For the root-location fix, only the isolated path-setup expressions were
@@ -224,3 +224,10 @@ Outside the date-reading setup, all statistical and plotting expressions are
 unchanged. No numerical input or analysis workbook was
 modified. Neither full script was sourced; no statistical results, LaTeX tables,
 or PDFs were regenerated.
+
+REVISED CPU EVENT LIST (main_J1104.tex / Supplementary_Appendix.tex)
+The active CPU figure uses eight windows: EU ETS backloading/Phase III,
+COP21/Paris Agreement, U.S. Paris exit announcement, European Green Deal,
+Fit for 55/Glasgow Pact, REPowerEU, IRA, and MSR/EU ETS reform. E16 is absent;
+remaining IDs and monthly boundaries are retained. Event windows provide
+historical context and are not imposed as estimated break dates.

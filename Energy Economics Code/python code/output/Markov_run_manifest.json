@@ -1,0 +1,13 @@
+{
+  "input_sha256": {
+    "Energy Economics Code/matlab code/resilience_metrics.xlsx": "9696664f63ac4b335f9b826ae8e2abbedefe5985ed6092cbff32efa054e193f3",
+    "Energy Economics Data/markov_scale_data_166.csv": "2aa9ac5ee5f0aee888a6077831727fe6520c2941a84550805f795b5a92812aa8"
+  },
+  "models": 30,
+  "bh_family": "individual slope equality tests only",
+  "bh_family_size": 120,
+  "bh_significant_slopes_5pct": 11,
+  "converged_models": 30,
+  "recorded_fit_warnings": 0,
+  "one_estimation_pass": true
+}

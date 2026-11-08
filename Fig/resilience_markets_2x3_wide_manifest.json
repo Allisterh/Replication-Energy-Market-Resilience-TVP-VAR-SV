@@ -1,0 +1,66 @@
+{
+  "input_sha256": {
+    "Energy Economics Code/matlab code/resilience_metrics.xlsx": "9696664f63ac4b335f9b826ae8e2abbedefe5985ed6092cbff32efa054e193f3",
+    "Energy Economics Data/VAR_100data.xlsx": "337ecfdb9bf3ef57ea9dae97c5d2ad2941dcd9b2bccfda173dbc4d84a1244d5b"
+  },
+  "rows": [
+    "RI",
+    "RD"
+  ],
+  "columns": [
+    "GPR",
+    "CPU",
+    "OPU"
+  ],
+  "markets": [
+    "OIL",
+    "NG",
+    "COAL",
+    "ERIX",
+    "EUA"
+  ],
+  "period": [
+    "2010-02-01",
+    "2023-11-01"
+  ],
+  "series": 30,
+  "observations_per_series": 166,
+  "smoothing": false,
+  "angle_degrees": 45.0,
+  "native_size_mm": [
+    279.4,
+    144.7
+  ],
+  "event_strip_height_mm": 31.4,
+  "event_fontsize_pt": 7.0,
+  "legend_position": "inside each RI panel, lower center, one row per uncertainty source",
+  "y_tick_labels": "all six panels",
+  "y_axis_titles": "leftmost panel in each row",
+  "angle_comparison": [
+    {
+      "angle_degrees": 30.0,
+      "native_size_mm": [
+        279.4,
+        137.8
+      ],
+      "event_strip_height_mm": 24.5
+    },
+    {
+      "angle_degrees": 45.0,
+      "native_size_mm": [
+        279.4,
+        144.7
+      ],
+      "event_strip_height_mm": 31.4
+    },
+    {
+      "angle_degrees": 60.0,
+      "native_size_mm": [
+        279.4,
+        149.7
+      ],
+      "event_strip_height_mm": 36.4
+    }
+  ],
+  "event_x_coordinates_shared_with_curves": true
+}

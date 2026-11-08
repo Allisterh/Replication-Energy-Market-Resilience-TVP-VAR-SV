@@ -108,33 +108,22 @@ indexing conventions are explained in matlab code/readme.txt.
 The supplied baseline resilience workbook can be used to reproduce downstream
 analyses without re-running MCMC.
 
-6. STEP 3: ESTIMATE THE MARKOV MODELS AND RUN WALD TESTS
-------------------------------------------------------
-Open python code/Markov.ipynb in Jupyter. Start the kernel inside the project
-tree, preferably in python code/, restart it, and run all six cells in order.
-The first cell discovers the two sibling package folders and validates:
+6. STEP 3: RUN THE PYTHON MODELS AND FINAL REPORT
+------------------------------------------------
+Open python code/Markov.ipynb and run its five code stages in order. Keep
+markov_reporting.py next to the notebook. Each selected model is fitted once;
+regression tables, economic labels, probabilities and Wald tests share that
+same result dictionary. The model specification and data mappings are retained.
 
-  Energy Economics Code/matlab code/resilience_metrics.xlsx
-  Energy Economics Data/markov_scale_data_166.csv
+By default the notebook shows one final report. Start with output/
+Markov_results.html or Markov_results.xlsx. Detailed coefficient tables can
+be expanded, while all numerical estimates and test rows remain in the XLSX.
+The existing probability/test workbook names and R worksheet schemas are kept.
 
-The default ALL selection fits the three uncertainty sources, two resilience
-measures, and five markets: 30 two-state models per estimation cell. The
-intercept, four macrofinancial slopes, and error variance switch across states.
-State labels are ordered economically: State 1 has higher RI or lower RD.
-
-Outputs in python code/output/ are:
-
-  gpr_ms_state_probabilities_state1.xlsx
-  cpu_ms_state_probabilities_state1.xlsx
-  opu_ms_state_probabilities_state1.xlsx
-  cross_state_equality_tests.xlsx
-  cross_state_comprehensive_tests.xlsx
-
-The first three contain probabilities_long and state_mapping worksheets for R.
-The tests cover individual slopes, regime levels, and joint slope equality.
-The comprehensive notebook preserves the existing BH correction across the
-combined individual level-and-slope family; joint tests retain raw p-values.
-See python code/readme.txt for hypotheses, correction scope, and output columns.
+BH correction applies to the 120 individual slope tests under ALL, as specified
+in the current Supplementary_Appendix.tex. Conditional-level and joint-slope
+comparisons retain raw p-values. This replaces the earlier pooled 150-test
+family. See python code/readme.txt for the scope and complete output list.
 
 7. STEP 4: RUN THE R SUMMARIES AND FIGURES
 ----------------------------------------
@@ -202,3 +191,22 @@ Keep the original variable order, dates, and shock-response mappings when
 passing data between languages. Generated workbooks are outputs rather than
 replacements for the prepared source inputs. Running a stage again writes
 the same configured output filenames.
+
+9. OPTIONAL STATIC VAR BENCHMARK (MATLAB)
+----------------------------------------
+From matlab code/, run results = static_var_main to estimate a constant-
+parameter OLS VAR using the same prepared inputs, one lag, generalized shock
+definition, horizons 0:8, and existing RI/RD formulas. The benchmark also
+compares its 15 uncertainty-market RI/RD estimates with the corresponding
+means and ranks from the existing TVP resilience workbook, when available.
+
+Outputs are isolated in matlab code/static_var_output/. Existing TVP, Markov,
+and R inputs are not overwritten. See matlab code/readme_static_var.txt for
+the full workflow and interpretation of the static benchmark.
+
+10. SELECTED PYTHON RESILIENCE FIGURE
+-------------------------------------
+Run python code/ee_plot_resilience_2x3.py for the selected 2 x 3 layout. It
+exports to Fig/ and uses the same baseline workbook/calendar as R. The revised
+CPU list contains eight policy episodes, matching Supplementary_Appendix.tex;
+E16 (Indonesia coal ban) is absent. See the dedicated Python figure README.

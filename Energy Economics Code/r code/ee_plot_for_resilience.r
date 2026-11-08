@@ -418,9 +418,9 @@ library(showtext)
     event_id = c("E01", "E02", "E03", "E08", "E10", "E12", "E15", "E17", "E22"), measure = "both",
     x_shift_months = c(-15, 0, -8, -24, -14, -27, -18, -23, -17),
     y_pos = c(0.75, 0.26, 0.75, 0.50, 0.75, 0.25, 0.75, 0.24, 0.50), stringsAsFactors = FALSE
-    ), CPU = data.frame(event_id = c("E04", "E06", "E09", "E11", "E14", "E16", "E18", "E19", "E21"),
-    measure = "both", x_shift_months = c(-12, -12, -14, -26, -18, -22, -10, -4, -9),
-    y_pos = c(0.75, 0.75, 0.25, 0.75, 0.75, 0.24, 0.75, 0.50, 0.20), stringsAsFactors = FALSE
+    ), CPU = data.frame(event_id = c("E04", "E06", "E09", "E11", "E14", "E18", "E19", "E21"),
+    measure = "both", x_shift_months = c(-23, -12, -35, -18, -48, -9, -27, -19),
+    y_pos = c(0.76, 0.76, 0.22, 0.76, 0.22, 0.76, 0.22, 0.22), stringsAsFactors = FALSE
     ), OPU = data.frame(event_id = c("E01", "E05", "E07", "E10", "E13", "E17", "E20", "E22"),
     measure = "both", x_shift_months = c(-12, -10, -12, -15, -18, -27, -23, -18),
     y_pos = c(0.75, 0.75, 0.25, 0.75, 0.25, 0.75, 0.75, 0.25), stringsAsFactors = FALSE))
@@ -453,7 +453,7 @@ library(showtext)
     CEX_X <- 2
     CEX_Y <- 2.25
     CEX_MAIN <- 2.25
-    CEX_EVENT <- 1.75
+    CEX_EVENT <- if (TARGET_SHOCK == "CPU") 1.15 else 1.75
     CEX_HEADER <- 1.30
 
     GRID_LWD <- 0.6
@@ -494,33 +494,17 @@ library(showtext)
       out
     }
 
-    # 7) Event data
-    events <- data.frame(event_id = sprintf("E%02d", 1:22), type = c(
-      "GPR_OPU", "GPR", "GPR", "CPU", "OPU", "CPU", "OPU", "GPR", "CPU",
-      "GPR_OPU", "CPU", "GPR", "OPU", "CPU", "GPR", "OPU_CPU", "GPR_OPU",
-      "CPU", "CPU", "OPU", "CPU", "GPR_OPU"
-      ), start = as.Date(c("2011-02-01", "2012-01-01", "2014-02-01", "2012-11-01", "2014-11-01",
-      "2015-11-01", "2016-01-01", "2017-01-01", "2017-06-01", "2019-09-01",
-      "2019-12-01", "2020-01-01", "2020-03-01", "2021-07-01", "2021-09-01",
-      "2022-01-01", "2022-02-01", "2022-03-01", "2022-08-01", "2023-04-01",
-      "2023-02-01", "2023-10-01"
-      )), end = as.Date(c("2011-10-01", "2012-07-01", "2015-02-01", "2013-09-01", "2016-02-01",
-      "2016-01-01", "2017-03-01", "2017-12-01", "2017-12-01", "2019-10-01",
-      "2020-03-01", "2020-02-01", "2020-06-01", "2021-12-01", "2022-03-01",
-      "2022-03-01", "2022-12-01", "2022-11-01", "2023-04-01", "2023-11-01",
-      "2023-06-01", "2023-11-01"
-      )), event_short = c("Arab Spring\n& Libya", "Iran\nsanctions", "Crimea\ncrisis",
-      "EU ETS\nPhase III", "Oil price\ncollapse", "Paris\nAgreement", "OPEC+\ncooperation",
-      "Middle East\ntensions", "U.S. Paris\nwithdrawal", "Saudi\nattacks", "EUR\nGreen Deal",
-      "U.S.-Iran\nconfrontation", "COVID-19\noil crash", "Fit for 55\n& COP26", "EUR gas\ncrisis",
-      "Indonesia\ncoal ban", "Russia-\nUkraine war", "REPowerEU", "IRA", "OPEC+ cuts\n& Mideast",
-      "EU ETS\nreform", "Israel-\nPalestine"), stringsAsFactors = FALSE)
+    # 7) Major-event windows in the revised Supplementary_Appendix.tex.
+    # E16 (Indonesia coal ban) is absent from the current eight-event CPU list.
+    events <- data.frame(
+      event_id = c("E01", "E02", "E03", "E04", "E05", "E06", "E07", "E08", "E09", "E10", "E11", "E12", "E13", "E14", "E15", "E17", "E18", "E19", "E20", "E21", "E22"),
+      type = c("GPR_OPU", "GPR", "GPR", "CPU", "OPU", "CPU", "OPU", "GPR", "CPU", "GPR_OPU", "CPU", "GPR", "OPU", "CPU", "GPR", "GPR_OPU", "CPU", "CPU", "OPU", "CPU", "GPR_OPU"),
+      start = as.Date(c("2011-02-01", "2012-01-01", "2014-02-01", "2012-11-01", "2014-11-01", "2015-11-01", "2016-01-01", "2017-01-01", "2017-06-01", "2019-09-01", "2019-12-01", "2020-01-01", "2020-03-01", "2021-07-01", "2021-09-01", "2022-02-01", "2022-03-01", "2022-08-01", "2023-04-01", "2023-02-01", "2023-10-01")),
+      end = as.Date(c("2011-10-01", "2012-07-01", "2015-02-01", "2013-09-01", "2016-02-01", "2016-01-01", "2017-03-01", "2017-12-01", "2017-12-01", "2019-10-01", "2020-03-01", "2020-02-01", "2020-06-01", "2021-12-01", "2022-03-01", "2022-12-01", "2022-11-01", "2023-04-01", "2023-11-01", "2023-06-01", "2023-11-01")),
+      event_short = c("Arab Spring\n& Libya", "Iran\nsanctions", "Crimea\ncrisis", "EU ETS backloading\n& Phase III", "Oil price\ncollapse", "COP21 / Paris\nAgreement", "OPEC+\ncooperation", "Middle East\ntensions", "U.S. Paris exit\nannouncement", "Saudi\nattacks", "EUR\nGreen Deal", "U.S.-Iran\nconfrontation", "COVID-19\noil crash", "Fit for 55 /\nGlasgow Pact", "EUR gas\ncrisis", "Russia-\nUkraine war", "REPowerEU", "IRA", "OPEC+ cuts\n& Mideast", "MSR / EU ETS\nreform", "Israel-\nPalestine"), stringsAsFactors = FALSE)
 
     events$mid <- events$start + (events$end - events$start) / 2
-
-    # Preserve the event definitions used by the original OPU figure.
     if (TARGET_SHOCK == "OPU") {
-      events$type[events$event_id == "E16"] <- "CPU"
       events$event_short[events$event_id == "E20"] <- "OPEC+ cuts"
     }
 

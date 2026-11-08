@@ -47,12 +47,14 @@ Please keep both `Energy Economics Code` and `Energy Economics Data` folders und
     │   └── ...
     ├── python code/              # Markov regime-switching models & Wald hypothesis tests
     │   ├── Markov.ipynb
+    │   ├── markov_reporting.py   # Final tables and report formatting
+    │   ├── ee_plot_resilience_2x3.py # Selected six-panel resilience figure
     │   └── ...
     └── r code/                   # Descriptive statistics tables & figure rendering
         ├── ee_descriptive_statistics.r
         ├── ee_plot_for_resilience.r
         └── ...
-└── Fig/                        # All MATLAB and R PDF figures
+└── Fig/                        # MATLAB, R and Python figure exports
 ```
 
 Detailed instructions: [Code workflow](Energy%20Economics%20Code/readme.txt),
@@ -69,7 +71,7 @@ Detailed instructions: [Code workflow](Energy%20Economics%20Code/readme.txt),
   - Statistics and Machine Learning Toolbox
   - Spreadsheet I/O support
 - **Python (>= 3.9):**
-  - Packages: `jupyter`, `numpy`, `pandas`, `scipy`, `statsmodels`, `openpyxl`, `matplotlib`, `requests`
+  - Packages: `jupyter`, `numpy`, `pandas`, `scipy`, `statsmodels`, `openpyxl`, `matplotlib`
 - **R (>= 4.0):**
   - Packages: `readxl`, `tseries`, `e1071`, `ggplot2`, `sysfonts`, `showtext`, `grid`
 
@@ -99,9 +101,10 @@ absent. See the R README for the exact font settings.
 ### Step 3: Estimate Markov Regime-Switching Models (Python)
 1. Start Jupyter Notebook in `Energy Economics Code/python code/`.
 2. Open and run all cells in `Markov.ipynb` sequentially.
-   - Cells 3 and 4 each fit 30 two-state models across uncertainty sources, resilience dimensions, and markets. Both estimation passes are retained; the Wald cells use the results from Cell 4.
-   - Conducts cross-state Wald equality tests. Benjamini–Hochberg (BH) adjustment is applied to the combined individual level-and-slope family; the separate slope-equality workbook and joint-slope tests retain raw p-values.
-   - Exports smoothed state probabilities and test summaries to `python code/output/`.
+   - Five code stages fit each of the 30 two-state models once, then reuse the same fitted objects for coefficient tables, probabilities and Wald tests.
+   - BH adjustment applies to the 120 individual slope comparisons, matching the current supplementary appendix. Conditional-level and joint-slope tests retain raw p-values.
+   - Start with `python code/output/Markov_results.html` or `Markov_results.xlsx`; the notebook displays one final report with expandable coefficient tables.
+   - Existing probability and test workbooks remain available for R and numerical inspection. Optimizer warnings and convergence flags are retained in the final workbook.
 
 ### Step 4: Summary Tables and Figures (R)
 The R scripts locate `<project root>` by searching upward from a supplied
@@ -148,7 +151,7 @@ No separate date workbook or manually initialized date object is required.
 The plotting file contains four complete blocks:
 
 - **Block 1:** Conceptual resilience schematic.
-- **Block 2:** Baseline RI/RD figures for GPR, CPU, and OPU.
+- **Block 2:** Baseline RI/RD figures for GPR, CPU, and OPU. The CPU list follows the revised appendix's eight policy episodes, excluding the Indonesia coal ban.
 - **Block 3:** Comparison across $H = 6, 8, 10$, using the three supplied
   workbooks in `Energy Economics Data/horizon_resilience/`.
 - **Block 4:** Smoothed regime probabilities from the Python outputs.
@@ -160,6 +163,14 @@ packages. Each block initializes its paths; Blocks 2-3 also read their dates.
 The comparison workbooks preserve the existing analysis inputs. To regenerate
 alternative horizons, synchronize the MATLAB horizon, response-point count,
 and first retained worksheet row as documented in the MATLAB README.
+
+The selected Python figure can also be generated with:
+
+```sh
+python3 "Energy Economics Code/python code/ee_plot_resilience_2x3.py"
+```
+
+It writes PDF, SVG and PNG files to `Fig/`. See its [layout guide](Energy%20Economics%20Code/python%20code/readme_resilience_2x3_wide.txt).
 
 ### Output locations
 

@@ -1,229 +1,194 @@
 ENERGY ECONOMICS PYTHON CODE
 ===========================
 
-1. NOTEBOOK AND REFACTOR
-------------------------
-Markov.ipynb is the only notebook. It estimates two-state Markov-switching
-regressions for resilience intensity (RI) and duration (RD), exports state
-probabilities for R, and performs cross-state Wald tests.
+1. START HERE
+-------------
+Open Markov.ipynb and run its five code stages in order. Each selected model is
+estimated once. Coefficient tables, economic state labels, state probabilities
+and all Wald tests use the same fitted result objects.
 
-The six code cells and their running order are retained. Twelve identical
-model utilities from the two estimation cells now share definitions in Cell 1.
-Repeated console headings and compact-table column lists use small helpers.
-Separator comments, commented-out access examples, and excessive wrapping have
-been reduced. No additional helper file or data input is required.
+Only the final stage displays results by default. It shows state levels and
+persistence, a compact test overview, and the individual slope differences
+retained after BH correction. Full coefficient tables can be expanded. The
+same report is saved as output/Markov_results.html, with all numerical results
+in output/Markov_results.xlsx. Start with these two files.
 
-Both estimation passes, their separate settings, parameter precision, state
-labeling, calculations, error messages, printed text/order, and export formats
-are retained. The shared utilities keep their existing function names and
-arguments. Imports remain in the estimation cells, so either estimation stage
-can still run after setup without executing the other estimation stage.
+The earlier duplicate estimation pass, per-model console banners, repeated
+wide text tables and full test dumps have been removed. Numerical model
+settings, sample alignment and probability worksheet schemas are retained.
+Optimizer warnings are recorded and summarized in the report; they are not
+silently discarded. Full messages appear in the Fit_warnings workbook sheet.
 
-2. PATHS AND INPUTS
+2. PATHS AND REQUIREMENTS
+-------------------------
+Keep Energy Economics Code and Energy Economics Data under one project root.
+Start the Jupyter kernel inside that tree, preferably in python code/. The
+setup stage searches upward for both package folders.
+
+Inputs:
+  Energy Economics Code/matlab code/resilience_metrics.xlsx
+  Energy Economics Data/markov_scale_data_166.csv
+
+Outputs:
+  Energy Economics Code/python code/output/
+
+Requirements for Markov.ipynb:
+  Python >= 3.9, numpy, pandas, scipy, statsmodels, openpyxl, IPython, Jupyter.
+  Example: python3 -m pip install numpy pandas scipy statsmodels openpyxl jupyterlab
+
+markov_reporting.py supplies display and spreadsheet formatting only; it does
+not estimate models. Keep it next to Markov.ipynb. The notebook locates this
+module through the resolved project root.
+
+The separate figure scripts additionally use matplotlib. Design-comparison
+prototypes also use Pillow. Figures are saved to the project-root Fig/ folder.
+
+3. FIVE CODE STAGES
 -------------------
-Keep the Code and Data folders under one parent directory:
+  1. Find paths, import dependencies and define shared model utilities.
+  2. Estimate final models and export R-ready probabilities.
+  3. Compute individual slope-equality tests with raw p-values.
+  4. Compute level, individual-slope and joint-slope Wald tests; adjust slopes.
+  5. Export and display one final formatted report.
 
-  <project root>/
-    Energy Economics Data/
-      markov_scale_data_166.csv
-    Energy Economics Code/
-      matlab code/
-        resilience_metrics.xlsx
-      python code/
-        Markov.ipynb
-        readme.txt
-        output/
-      r code/
-        ee_plot_for_resilience.r
-        ee_descriptive_statistics.r
+Markdown headings identify stages; these numbers refer to code stages, not to
+all notebook cells. Restart the kernel before running the entire notebook.
 
-Run tvpvar_main.m and resilience.m as described in the MATLAB README to generate
-the resilience workbook, or use the supplied baseline workbook.
+Stage 2 controls, configured once:
+  SELECTED_UNCERTAINTY = "ALL"       GPR, CPU, OPU, or ALL.
+  STATE_TO_PLOT = 1                  Economic state for prob_selected.
+  USE_SMOOTHED_PROBABILITIES = True   Full-sample smoothed probabilities.
+  EXPORT_PROBABILITY_XLSX = True     Write the three R-ready workbooks.
+  PRINT_STATSMODELS_SUMMARY = False  Optional full optimizer/model summaries.
+  VERBOSE = False                   Optional progress banners.
 
-Cell 1 finds PROJECT_ROOT from the kernel working directory and its parents.
-It also recognizes a my paper/ subfolder. Start the kernel inside the project
-tree, preferably in python code/. Keep the two package folder names unchanged.
+ALL fits 30 models: three shocks x two measures x five markets. Setting one
+shock fits ten models. Test stages retain their separate XLSX export flags.
+The final report is always written. Rerun stages 2-5 after changing selection.
 
-Resolved inputs:
-  RESILIENCE_FILE = <project root>/Energy Economics Code/matlab code/
-                    resilience_metrics.xlsx
-  MACRO_DATA_FILE = <project root>/Energy Economics Data/
-                    markov_scale_data_166.csv
+4. SAMPLE AND MODEL
+--------------------
+The resilience workbook supplies t, Variable, RP and RD; RP is plotted and
+reported as RI. The selected series contain 166 monthly observations,
+February 2010-November 2023, corresponding to t = 2,...,167.
 
-The resilience workbook supplies t, Variable, RP, and RD. RP is the MATLAB
-column name for RI. Each baseline shock-response series has 166 observations,
-with t = 2,...,167. Market mappings, in the fixed order, are:
-
+Market order and variable mappings:
   Shock   OIL     NG      COAL    ERIX    EUA
   GPR     Var6    Var7    Var8    Var9    Var10
   CPU     Var14   Var15   Var16   Var17   Var18
   OPU     Var22   Var23   Var24   Var25   Var26
 
-The conditioning CSV supplies date, DXY, GSCPI, CPI, Industrial, covering
-February 2010-November 2023. Its four numerical columns are already standardized
-on the 166-month sample. They are used in DXY/GSCPI/CPI/Industrial order.
+The conditioning file supplies date, DXY, GSCPI, CPI and Industrial. Its four
+numerical columns are already standardized over the 166-month sample. Inputs
+retain the existing positional alignment: truncate to the shortest length,
+remove missing date/y/X jointly within each model, then sort by date. Preserve
+the supplied chronological ordering; no date merge is introduced.
 
-Both estimation cells align inputs by row order, truncate to their shortest
-length, and remove missing y and X jointly within each model. Cell 4 also
-carries dates through the selection and sorting. No date merge is performed;
-preserve the common chronological order of the supplied inputs.
-
-3. SOFTWARE
------------
-Use JupyterLab or Jupyter Notebook with a Python kernel. Required packages are
-numpy, pandas, scipy, statsmodels, openpyxl, matplotlib, requests, and IPython.
-pathlib, datetime, and io belong to the standard library. Cell 2 retains the
-existing %matplotlib inline magic and notebook imports.
-
-Example installation:
-  python -m pip install numpy pandas scipy statsmodels openpyxl matplotlib requests jupyterlab ipykernel
-
-Previously recorded analysis environment (not rechecked for this refactor):
-  Python 3.9.7       numpy 2.0.2        pandas 2.3.3
-  scipy 1.13.1       statsmodels 0.14.5 openpyxl 3.1.5
-  matplotlib 3.9.4   requests 2.32.5    IPython 8.18.1
-
-The parameter helpers retain support for both DXY[0]/GSCPI[1] and x1[0]/x2[1]
-naming. Keep package versions consistent when comparing numerical estimates.
-
-4. RUNNING THE SIX CELLS
-------------------------
-Open Markov.ipynb, restart the kernel, and run from top to bottom:
-
-  Cell 1: find paths, verify both input files, and define shared model helpers.
-          These definitions do not execute numerical calculations.
-  Cell 2: initialize the existing notebook imports and plotting magic.
-  Cell 3: fit and print the RI/RD Markov tables.
-  Cell 4: fit the same specification and export probability workbooks.
-  Cell 5: test individual cross-state slope equality and export the results.
-  Cell 6: test levels, individual slopes, and joint slopes; apply the existing
-          pooled individual-test BH correction and export comprehensive tests.
-
-Cells 3 and 4 both estimate models. ALL specifies 30 models per estimation cell:
-three shocks, two measures, and five markets. The later Wald cells use results
-left by Cell 4. The original two-pass workflow is retained.
-
-To select one shock, set SELECTED_UNCERTAINTY to "GPR", "CPU", or "OPU" in BOTH
-estimation cells; the default is "ALL". Run Cell 1 before either estimation
-cell to define the shared utilities. Re-run the intended estimation stage
-before a test cell when changing its sample or settings.
-
-5. MODEL, LABELS, AND CONTROLS
-------------------------------
-Each model centers the dependent variable by subtracting its sample mean:
-
+Each model centers y by its sample mean and estimates:
   y_t - mean(y) = alpha[s_t] + beta[s_t]' X_t + error_t
 
-The retained statsmodels MarkovRegression settings are:
-  k_regimes=2, trend="c", switching_trend=True,
-  switching_exog=True, switching_variance=True
+statsmodels settings:
+  MarkovRegression(k_regimes=2, trend="c", switching_trend=True,
+                   switching_exog=True, switching_variance=True)
   fit(method="nm", maxiter=10000, disp=False)
 
-The intercept, four slopes, and error variance switch across states; transition
-probabilities are time-invariant. Nelder-Mead uses the existing statsmodels
-starting-value procedure. Original-scale conditional levels add mean(y) back
-to each intercept and are evaluated at X=0. Slopes refer to standardized X.
+The intercept, four slopes and variance switch across states. The default
+statsmodels starting-value procedure and time-invariant transition matrix are
+retained. Original-scale conditional levels equal mean(y) plus the fitted
+intercept, evaluated at X=0. No TVP-VAR or resilience calculation is performed.
 
-Raw regimes are relabeled independently for each model:
-  RI State 1: higher conditional level; stronger absorption.
-  RI State 2: lower conditional level; weaker absorption.
-  RD State 1: lower conditional level; faster relative recovery.
-  RD State 2: higher conditional level; slower relative recovery.
+Economic labels, assigned independently for every model:
+  RI State 1: higher conditional level / stronger absorption.
+  RI State 2: lower conditional level / weaker absorption.
+  RD State 1: lower conditional level / faster relative recovery.
+  RD State 2: higher conditional level / slower relative recovery.
 
-p11 and p22 are staying probabilities after relabeling. Markov-state expected
-persistence, 1/(1-p_ss), is distinct from the RD measure. The exported mapping
-retains the raw-to-economic state correspondence.
+p11/p22 are staying probabilities after relabeling. Expected state duration is
+1/(1-p_ss), computed from unrounded probabilities and measured in observation
+months. It is distinct from RD within the GIRF horizon.
 
-Compact tables retain four decimal places for estimates and three for
-z-statistics; fitted objects retain full precision. Within-state stars use
-two-sided normal z-test p-values. Existing star thresholds, zero-rounding
-handling, and the precision choices in the separate estimation cells are kept.
+Displayed coefficients retain four decimals, z-statistics three decimals, and
+raw within-state significance stars. Full-precision estimates, standard errors,
+p-values, likelihood, AIC/BIC and convergence flags are retained in the final
+workbook. Formatting does not change the fitted numerical objects.
 
-Cell 4 controls:
-  STATE_TO_PLOT = 1                  Select State 1 for prob_selected.
-  USE_SMOOTHED_PROBABILITIES = True  Use full-sample smoothed probabilities.
-  EXPORT_PROBABILITY_XLSX = True     Write probability workbooks.
-  PRINT_STATSMODELS_SUMMARY = False  Print compact tables.
-
-STATE_TO_PLOT=2 selects State 2 and filenames ending in state2.xlsx. Both
-states remain available in their own columns. The smoothing flag set to False
-selects filtered probabilities. PRINT_STATSMODELS_SUMMARY is also configurable
-in Cell 3. The two test cells retain their own export flags.
-
-6. WALD TESTS AND FDR
----------------------
-Tests use the full parameter covariance matrix, including cross-state terms:
-
-  W = (R*theta)' * inverse(R*Cov(theta)*R') * (R*theta)
-
-Cell 5 tests each slope difference with one restriction. With ALL and complete
-fits, it reports 120 tests. p_value and stars are unadjusted. sign_opposite
-records point-estimate signs; the Wald p-value tests their difference.
-
-Cell 6 retains 30 level/intercept tests, 120 individual slope tests, and 30
-joint slope tests under ALL. Adding the same mean(y) to both state intercepts
-does not alter their difference. Its Wald helper uses a pseudoinverse and
-rank(R) degrees of freedom; the joint test normally has four restrictions.
-
-Benjamini-Hochberg is applied ONCE to the combined available individual level
-AND slope family (150 tests under ALL). q_value_bh and stars_q are added while
-raw p_value and stars_p remain. Levels and slopes are not separate correction
-families. Joint tests retain raw p-values/stars and receive no BH q-values.
-This rule remains separate from within-state z-tests and the Cell 5 workbook.
-
-7. OUTPUTS AND R CONNECTION
+5. WALD TESTS AND BH FAMILY
 ---------------------------
-NOTEBOOK_OUTPUT_DIR controls the common destination:
-  <project root>/Energy Economics Code/python code/output/
-Export creates the directory as needed and reuses the configured filenames.
+All cross-state Wald tests use the full covariance matrix, including
+cross-state covariance terms. Under ALL, the final tests consist of:
+  30 conditional-level equality tests;
+  120 variable-specific slope equality tests;
+  30 joint tests of equality of all four slopes.
 
-Default probability files:
+The current main_J1104.tex and Supplementary_Appendix.tex define ONE BH family
+of the 120 individual slope comparisons. q_value_bh and stars_q are populated
+for those slopes only. Conditional-level and joint-slope tests retain raw
+p-values; their BH q-values are not defined. This differs from within-state
+coefficient significance and from the separate raw slope-test workbook.
+
+The previous notebook pooled 30 levels with 120 slopes. The output revision
+corrects that scope to match the current manuscript. On the supplied baseline
+results, slope-only BH gives 11 significant differences at 5%: ten CPI and one
+Industrial comparison. The old pooled family gave 15. Raw estimates, Wald
+statistics and raw p-values are unaffected by this correction.
+
+6. FINAL OUTPUTS
+----------------
+The main entry points are:
+  Markov_results.html
+    One readable report; full coefficient tables are expandable.
+  Markov_results.xlsx
+    Guide, Model_overview, six shock/measure coefficient sheets,
+    Coefficients_numeric, Test_overview, Slope_differences, Level_differences,
+    Joint_slope_tests, State_mapping, and Fit_warnings when needed.
+  Markov_run_manifest.json
+    Input SHA-256 hashes, model count, correction family, convergence and
+    warning counts. Input hashes are verified again before final export.
+
+Existing integration files keep their names and worksheet schemas:
   gpr_ms_state_probabilities_state1.xlsx
   cpu_ms_state_probabilities_state1.xlsx
   opu_ms_state_probabilities_state1.xlsx
-
-Each contains probabilities_long and state_mapping. The long sheet retains
-date, shock, measure, market, metric_value, y_centered, probability_type,
-prob_raw_regime0, prob_raw_regime1, prob_state1, prob_state2, state_to_plot,
-selected_raw_regime, and prob_selected. Baseline: 1660 rows per shock.
-state_mapping contains 10 records per shock, including conditional levels,
-raw-state labels, nobs, and optimizer convergence. Market/measure/date row
-order, date formatting, filters, frozen headers, and the active sheet are kept.
-
-Test files:
+    probabilities_long: date, shock, measure, market, metric_value, y_centered,
+    probability_type, prob_raw_regime0/1, prob_state1/2, state_to_plot,
+    selected_raw_regime and prob_selected. Baseline: 1660 rows per shock.
+    state_mapping: ten raw-to-economic state mapping records per shock.
   cross_state_equality_tests.xlsx
-    equality_tests: 120 unadjusted individual slope tests under ALL.
+    equality_tests: 120 individual slopes with raw p-values.
   cross_state_comprehensive_tests.xlsx
-    individual_tests: 30 level plus 120 slope tests, with raw p and pooled BH q.
-    joint_slope_tests: 30 joint tests, with raw p-values.
+    individual_tests: 30 levels plus 120 slopes; BH q-values for slopes only.
+    joint_slope_tests: 30 joint tests with raw p-values.
 
-Objects remain in results, paper_tables, probability_tables, state_mapping_tables,
-and exported_probability_files. A model pickle is not automatically exported.
-Examples of accessing the retained objects:
+All XLSX files use readable headers, frozen header rows, filters and consistent
+number/date formatting. The probability workbook stays active on
+probabilities_long, the worksheet read by R. STATE_TO_PLOT=2 changes probability
+filenames to state2.xlsx; both economic state probability columns remain.
+Files ending in _no100.xlsx are earlier local alternatives, not default inputs
+or outputs of this workflow. They are not used to build the final report.
 
-  results["GPR"]["RI"]["OIL"].summary()
-  paper_tables["CPU"]["RD"][display_columns]
-  probability_tables["GPR"].head()
-  state_mapping_tables["GPR"]
-  exported_probability_files["GPR"]
+7. FIGURES AND REVISED CPU EVENTS
+---------------------------------
+ee_plot_resilience_2x3.py is the selected standalone resilience figure script.
+See readme_resilience_2x3_wide.txt for commands and layout parameters. It keeps
+the accepted 45-degree, 7-point event labels, a market legend in each RI panel,
+and numerical y-axis tick labels in all six data panels.
 
-The R Markov block reads the probability workbooks from output/ and writes its
-PDFs to <project root>/Fig/, shared with the other R and MATLAB figures.
-Set R's SHOCK_LABEL and STATE_TO_PLOT to match the Python file.
-The R scripts locate the root by searching upward from PROJECT_DIR, if supplied,
-and then R's current working directory. Starting R inside r code/ is supported.
-An explicit valid root takes priority. Rerun the R path setup after moving the
-package or changing PROJECT_DIR. R baseline plots and descriptive statistics
-continue to read matlab code/resilience_metrics.xlsx.
+The revised CPU list follows Appendix Table tab:event_windows_ext in
+Supplementary_Appendix.tex: eight windows, with no Indonesia coal-ban event.
+Labels identify EU ETS backloading/Phase III, COP21/Paris, the U.S. Paris exit
+announcement, European Green Deal, Fit for 55/Glasgow Pact, REPowerEU, IRA and
+MSR/EU ETS reform. The R baseline generator and Python design scripts use the
+same updated memberships and monthly boundaries. GPR and OPU retain nine and
+eight windows, respectively; existing event IDs remain stable (E16 is absent).
 
-8. STATIC VERIFICATION
-----------------------
-All six cells passed Python parsing and compilation to code objects without
-execution; the unchanged IPython magic is excluded from the Python parser.
-The 12 shared definitions match both originals. After accounting for their
-relocation and statically expanding the new heading/column helpers, each
-cell's executable syntax tree matches the pre-refactor code.
+R reads its Markov probabilities from output/ and writes PDF figures to Fig/.
+Match R's SHOCK_LABEL and STATE_TO_PLOT to the Python workbook selection.
 
-No cell, model, statistical test, or export was executed for this refactor.
-The six cells, cell IDs, execution counts, saved outputs, and notebook metadata
-are preserved. Saved results are retained historical outputs, not a new run.
+8. VERIFICATION
+---------------
+The updated notebook was parsed and run through all five code stages using
+the supplied inputs. The regression specification was retained, and final
+means/probabilities/raw tests were compared with the previous saved outputs.
+Only individual-slope BH q-values change with the corrected family. Selected
+figure PDFs were regenerated from the existing resilience workbook and
+rendered to inspect text placement and the revised CPU event list.
