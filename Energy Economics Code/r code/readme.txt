@@ -200,16 +200,21 @@ Append an override before the generation loop, for example:
 set_event_label_pos() within the generator also retains srt, cex, adj_x, adj_y,
 col_text, and label controls. Further manual calls belong after the adjustment
 loop and before plotting. The revised CPU list excludes E16 (Indonesia coal ban). OPU
-uses "OPEC+ cuts" for E20. CPU event names are reflowed at a smaller label size (CEX_EVENT=1.15) on two
-rows to accommodate the revised wording. CPU offsets are updated accordingly;
-GPR/OPU offsets and all data-panel settings are retained. Each shock uses common RI and RD axis ranges across markets.
+uses "OPEC+ cuts" for E20. CPU retains the original CEX_EVENT=1.75 and original
+horizontal offsets for its eight retained events. E14 (Fit for 55/COP26) is
+placed at y_pos=0.25 to avoid REPowerEU; all other vertical positions match
+the original layout. Concise, two-line event
+labels preserve the original visual arrangement; full event definitions remain
+in Supplementary_Appendix.tex. GPR/OPU offsets and all data-panel settings are
+retained. Each shock uses common RI and RD axis ranges across markets.
 
 7. STATIC VERIFICATION
 ----------------------
 Both scripts passed R syntax parsing. After accounting for the documented
 project/input/output path changes and directory setup, the remaining executable
-syntax trees match the previous versions. Statistical expressions and data-panel settings are retained. The later CPU
-update changes the event membership, wording, label size and offsets only.
+syntax trees match the previous versions. Statistical expressions and data-panel settings are retained. The revised CPU event list excludes E16. The subsequent layout correction
+restores the original R event font size, compact labels and horizontal offsets
+for the remaining CPU events, with one vertical correction for E14; the Python figure's separate 7-point design is unchanged.
 The horizon workbooks were copied byte for byte from the existing analysis.
 Existing reference PDFs were relocated without changing their contents.
 For the root-location fix, only the isolated path-setup expressions were
@@ -231,3 +236,14 @@ COP21/Paris Agreement, U.S. Paris exit announcement, European Green Deal,
 Fit for 55/Glasgow Pact, REPowerEU, IRA, and MSR/EU ETS reform. E16 is absent;
 remaining IDs and monthly boundaries are retained. Event windows provide
 historical context and are not imposed as estimated break dates.
+
+CPU R LAYOUT CORRECTION
+The R CPU figure uses CEX_EVENT=1.75, matching GPR and OPU. Its original
+horizontal adjustments and compact labels are restored after dropping E16.
+Only E14 moves down to y_pos=0.25 to avoid REPowerEU:
+  event_id:       E04, E06, E09, E11, E14, E18, E19, E21
+  x_shift_months: -12, -12, -14, -26, -18, -10, -4, -9
+  y_pos:          .75, .75, .25, .75, .25, .75, .50, .20
+The figure keeps short labels such as Paris Agreement and Fit for 55 & COP26.
+These identify the same updated appendix windows; the full policy descriptions
+are documented there. Only the CPU R PDF was regenerated for this correction.
