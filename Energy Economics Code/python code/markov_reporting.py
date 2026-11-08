@@ -68,21 +68,25 @@ def _table(frame):
 
 def write_markov_report(output_dir, paper_tables, model_overview, coefficients,
                         state_mapping_tables, individual_tests, joint_tests,
-                        model_warnings, probability_files, input_sha256):
+                        model_warnings, probability_files, input_sha256,
+                        appendix_diagnostics=None):
     """Export final results and return one HTML fragment for notebook display."""
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     intercepts = individual_tests.loc[individual_tests["test_type"] == "intercept"].copy()
     slopes = individual_tests.loc[individual_tests["test_type"] == "slope"].copy()
     selected = slopes.loc[slopes["q_value_bh"] < 0.05].copy()
+    def bh_count(frame):
+        values = frame.get("q_value_bh", pd.Series(dtype=float))
+        return int((values < .05).sum()) if values.notna().any() else pd.NA
     summary = pd.DataFrame([
         {"Test family": "Conditional levels", "Tests": len(intercepts),
-         "Raw p < 0.05": int((intercepts.p_value < .05).sum()), "BH q < 0.05": pd.NA},
+         "Raw p < 0.05": int((intercepts.p_value < .05).sum()), "BH q < 0.05": bh_count(intercepts)},
         {"Test family": "Individual slopes", "Tests": len(slopes),
          "Raw p < 0.05": int((slopes.p_value < .05).sum()),
          "BH q < 0.05": int((slopes.q_value_bh < .05).sum())},
         {"Test family": "Joint slopes", "Tests": len(joint_tests),
-         "Raw p < 0.05": int((joint_tests.p_value < .05).sum()), "BH q < 0.05": pd.NA},
+         "Raw p < 0.05": int((joint_tests.p_value < .05).sum()), "BH q < 0.05": bh_count(joint_tests)},
     ])
     notes = pd.DataFrame({"Item": ["Model", "Economic states", "Coefficient tests",
                                    "BH adjustment", "State duration", "Source consistency"],
@@ -90,7 +94,7 @@ def write_markov_report(output_dir, paper_tables, model_overview, coefficients,
         "Two-state Markov regression; switching intercept, four slopes and variance; Nelder-Mead, maxiter=10000.",
         "RI: State 1 has higher absorption. RD: State 1 has faster relative recovery.",
         "Parentheses in coefficient tables contain within-state z-statistics; stars use raw p-values.",
-        f"One family of {len(slopes)} individual slope tests. Conditional-level and joint tests retain raw p-values.",
+        f"Three independent families: {len(intercepts)} conditional levels, {len(slopes)} individual slopes, {len(joint_tests)} joint slopes. Raw p-values are retained.",
         "Expected months = 1/(1-p_ss), using unrounded staying probabilities; this is distinct from RD.",
         "Tables, probabilities and Wald tests all use the same fitted model objects.",
     ]})
@@ -121,6 +125,9 @@ def write_markov_report(output_dir, paper_tables, model_overview, coefficients,
             writer, sheet_name="State_mapping", index=False)
         if model_warnings:
             pd.DataFrame(model_warnings).to_excel(writer, sheet_name="Fit_warnings", index=False)
+        if appendix_diagnostics is not None:
+            for name, frame in appendix_diagnostics.items():
+                frame.to_excel(writer, sheet_name=name[:31], index=False)
         format_workbook(writer)
 
     css = """
@@ -177,8 +184,9 @@ def write_markov_report(output_dir, paper_tables, model_overview, coefficients,
                           '<p class="note">Estimates with raw within-state significance stars; z-statistics in parentheses.</p>',
                           _table(pd.DataFrame(rows)), '</details>'])
     parts.extend(['<h2>Cross-state inference</h2>', _table(summary.fillna("--")),
-                  f'<p class="note">BH correction applies to the {len(slopes)} individual slopes only. '
-                  'Level and joint tests use raw p-values. Full test tables are in the workbook.</p>',
+                  f'<p class="note">BH adjustment uses three separate families: {len(intercepts)} levels, '
+                  f'{len(slopes)} individual slopes and {len(joint_tests)} joint slopes. '
+                  'Raw p-values are also retained in the workbook.</p>',
                   '<h3>Individual slope differences retained after BH correction (q &lt; 0.05)</h3>'])
     view = selected[["shock", "measure", "market", "variable", "estimate_state1", "estimate_state2", "p_value", "q_value_bh"]].copy()
     for column in ("estimate_state1", "estimate_state2"):
@@ -187,6 +195,43 @@ def write_markov_report(output_dir, paper_tables, model_overview, coefficients,
         view[column] = view[column].map(_p_value)
     view.columns = ["Shock", "Measure", "Market", "Variable", "State 1", "State 2", "Raw p", "BH q"]
     parts.append(_table(view) if len(view) else '<p>No individual slope difference meets q &lt; 0.05.</p>')
+    diagnostic_metadata = None
+    if appendix_diagnostics is not None:
+        diagnostics = appendix_diagnostics
+        period = diagnostics["period_indicator"]
+        alignment = diagnostics["weighted_alignment"]
+        max_difference = float(alignment.absolute_difference.max()) if not alignment.empty else None
+        parts.extend(['<h2>Appendix: date sensitivity</h2>',
+            '<p class="note">Weighted regressions retain full-sample smoothed state probabilities and '
+            'standardization. The primary level indicator starts in January 2021; alternatives start '
+            'in March 2020 and February 2022. HAC uses six lags. States are not re-estimated.</p>'])
+        if not period.empty:
+            view = period[["shock", "measure", "market", "variable"]].copy()
+            for state in (1, 2):
+                view[f"State {state} with indicator"] = [f"{_number(b)} ({t:.2f})" for b, t in
+                    zip(period[f"withD_s{state}"], period[f"withD_s{state}_t"])]
+            view["Indicator, State 2"] = [f"{_number(b)} ({t:.2f})" for b, t in
+                zip(period.indicator_s2, period.indicator_s2_t)]
+            for tag in ("202003", "202101", "202202"):
+                view[f"Ratio {tag[:4]}-{tag[4:]}"] = period[f"ratio_{tag}"].map(lambda x: _number(x, 2))
+            parts.extend([f'<details><summary>Period-indicator results: {len(period)} selected slope differences</summary>',
+                          _table(view), '<p class="note">Parentheses contain unadjusted HAC t-statistics. '
+                          'Ratios are signed slope differences relative to the original Markov difference; '
+                          'they are not explained-variance shares. No new cross-state tests or BH correction '
+                          'are applied to these conditional sensitivity estimates.</p></details>'])
+        parts.extend(['<details><summary>Supporting macrofinancial and subsample checks</summary>',
+                      _table(diagnostics["macro_summary"]),
+                      '<p class="note">The workbook contains the linear HAC benchmark, weighted pre-2021 '
+                      'and excluding-2020 regressions, all three indicator dates, and full-sample alignment checks.</p>',
+                      '</details>'])
+        if max_difference is not None:
+            parts.append(f'<p class="note">Maximum absolute slope difference between the no-indicator '
+                         f'weighted regressions and the original Markov estimates: {max_difference:.6f}.</p>')
+        diagnostic_metadata = dict(selected_slope_differences=len(period), primary_date="2021-01-01",
+                                   indicator_dates=["2020-03-01", "2021-01-01", "2022-02-01"],
+                                   hac_lags=6, probability_floor=1e-6,
+                                   max_weighted_markov_slope_difference=max_difference,
+                                   state_process_reestimated=False)
     parts.append('<h2>Probability files for R</h2><ul>')
     for path in probability_files.values():
         name = Path(path).name
@@ -199,9 +244,11 @@ def write_markov_report(output_dir, paper_tables, model_overview, coefficients,
         '<title>Markov regression: final results</title></head><body>' + fragment + '</body></html>', encoding="utf-8")
     (output_dir / "Markov_run_manifest.json").write_text(json.dumps({
         "input_sha256": input_sha256, "models": len(model_overview),
-        "bh_family": "individual slope equality tests only", "bh_family_size": len(slopes),
+        "bh_family": "individual slopes (separate level and joint families)", "bh_family_size": len(slopes),
         "bh_significant_slopes_5pct": len(selected), "converged_models": converged,
         "recorded_fit_warnings": len(model_warnings), "one_estimation_pass": True,
+        "bh_families": summary.fillna("not available").to_dict(orient="records"),
+        "appendix_diagnostics": diagnostic_metadata,
     }, indent=2) + "\n", encoding="utf-8")
     # Notebook links resolve beside Markov.ipynb; the standalone HTML is inside output/.
     return fragment.replace('href="', 'href="output/')

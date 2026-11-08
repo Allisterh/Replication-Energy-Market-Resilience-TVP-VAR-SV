@@ -110,8 +110,8 @@ analyses without re-running MCMC.
 
 6. STEP 3: RUN THE PYTHON MODELS AND FINAL REPORT
 ------------------------------------------------
-Open python code/Markov.ipynb and run its five code stages in order. Keep
-markov_reporting.py next to the notebook. Each selected model is fitted once;
+Open python code/Markov.ipynb and run its six code stages in order. Keep
+markov_reporting.py and markov_diagnostics.py next to the notebook. Each selected model is fitted once;
 regression tables, economic labels, probabilities and Wald tests share that
 same result dictionary. The model specification and data mappings are retained.
 
@@ -120,10 +120,13 @@ Markov_results.html or Markov_results.xlsx. Detailed coefficient tables can
 be expanded, while all numerical estimates and test rows remain in the XLSX.
 The existing probability/test workbook names and R worksheet schemas are kept.
 
-BH correction applies to the 120 individual slope tests under ALL, as specified
-in the current Supplementary_Appendix.tex. Conditional-level and joint-slope
-comparisons retain raw p-values. This replaces the earlier pooled 150-test
-family. See python code/readme.txt for the scope and complete output list.
+BH uses separate families of 30 conditional levels, 120 individual slopes and
+30 joint-slope tests under ALL, matching main_J1108.tex and the appendix.
+The new supplementary stage reuses the fitted states for linear HAC benchmarks,
+weighted subsamples and three date-indicator sensitivity checks. It does not
+re-estimate the state process. Full settings and numerical details are stored
+in the final workbook. See python code/readme.txt for the independent TeX
+verification command and the complete output list.
 
 7. STEP 4: RUN THE R SUMMARIES AND FIGURES
 ----------------------------------------

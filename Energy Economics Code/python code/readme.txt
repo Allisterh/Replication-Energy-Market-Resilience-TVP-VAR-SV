@@ -3,7 +3,7 @@ ENERGY ECONOMICS PYTHON CODE
 
 1. START HERE
 -------------
-Open Markov.ipynb and run its five code stages in order. Each selected model is
+Open Markov.ipynb and run its six code stages in order. Each selected model is
 estimated once. Coefficient tables, economic state labels, state probabilities
 and all Wald tests use the same fitted result objects.
 
@@ -36,20 +36,23 @@ Requirements for Markov.ipynb:
   Python >= 3.9, numpy, pandas, scipy, statsmodels, openpyxl, IPython, Jupyter.
   Example: python3 -m pip install numpy pandas scipy statsmodels openpyxl jupyterlab
 
-markov_reporting.py supplies display and spreadsheet formatting only; it does
-not estimate models. Keep it next to Markov.ipynb. The notebook locates this
-module through the resolved project root.
+Keep markov_reporting.py and markov_diagnostics.py next to Markov.ipynb.
+The reporting module handles display and spreadsheet formatting; the diagnostic
+module reuses the existing fitted Markov results. Neither estimates another
+Markov model. The notebook finds both through the resolved project root.
+verify_appendix_results.py is an optional, independent manuscript checker.
 
 The separate figure scripts additionally use matplotlib. Design-comparison
 prototypes also use Pillow. Figures are saved to the project-root Fig/ folder.
 
-3. FIVE CODE STAGES
+3. SIX CODE STAGES
 -------------------
   1. Find paths, import dependencies and define shared model utilities.
   2. Estimate final models and export R-ready probabilities.
   3. Compute individual slope-equality tests with raw p-values.
   4. Compute level, individual-slope and joint-slope Wald tests; adjust slopes.
-  5. Export and display one final formatted report.
+  5. Compute supplementary macrofinancial, subsample and date-indicator checks.
+  6. Export and display one final formatted report.
 
 Markdown headings identify stages; these numbers refer to code stages, not to
 all notebook cells. Restart the kernel before running the entire notebook.
@@ -64,7 +67,7 @@ Stage 2 controls, configured once:
 
 ALL fits 30 models: three shocks x two measures x five markets. Setting one
 shock fits ten models. Test stages retain their separate XLSX export flags.
-The final report is always written. Rerun stages 2-5 after changing selection.
+The final report is always written. Rerun stages 2-6 after changing selection.
 
 4. SAMPLE AND MODEL
 --------------------
@@ -112,25 +115,24 @@ raw within-state significance stars. Full-precision estimates, standard errors,
 p-values, likelihood, AIC/BIC and convergence flags are retained in the final
 workbook. Formatting does not change the fitted numerical objects.
 
-5. WALD TESTS AND BH FAMILY
----------------------------
+5. WALD TESTS AND THREE BH FAMILIES
+-----------------------------------
 All cross-state Wald tests use the full covariance matrix, including
-cross-state covariance terms. Under ALL, the final tests consist of:
+cross-state covariance terms. main_J1108.tex and Supplementary_Appendix.tex
+specify three independent Benjamini-Hochberg families under ALL:
   30 conditional-level equality tests;
   120 variable-specific slope equality tests;
   30 joint tests of equality of all four slopes.
 
-The current main_J1104.tex and Supplementary_Appendix.tex define ONE BH family
-of the 120 individual slope comparisons. q_value_bh and stars_q are populated
-for those slopes only. Conditional-level and joint-slope tests retain raw
-p-values; their BH q-values are not defined. This differs from within-state
-coefficient significance and from the separate raw slope-test workbook.
+Each family has its own q_value_bh and stars_q. Raw p_value and stars_p remain
+available. Within-state coefficient stars continue to use unadjusted tests.
+For the supplied data, the respective 5% BH rejection counts are 28, 11 and 9.
+The 11 slope differences comprise ten CPI and one Industrial comparison.
 
-The previous notebook pooled 30 levels with 120 slopes. The output revision
-corrects that scope to match the current manuscript. On the supplied baseline
-results, slope-only BH gives 11 significant differences at 5%: ten CPI and one
-Industrial comparison. The old pooled family gave 15. Raw estimates, Wald
-statistics and raw p-values are unaffected by this correction.
+The level/joint q-values implement the current main article's Panel C notes.
+The existing 120-slope BH family and its 11 selected comparisons are unchanged.
+When selecting one uncertainty source instead of ALL, each family contains
+only the corresponding selected models. Use ALL to reproduce the paper.
 
 6. FINAL OUTPUTS
 ----------------
@@ -141,9 +143,13 @@ The main entry points are:
     Guide, Model_overview, six shock/measure coefficient sheets,
     Coefficients_numeric, Test_overview, Slope_differences, Level_differences,
     Joint_slope_tests, State_mapping, and Fit_warnings when needed.
+    Supplementary sheets: macro_summary, fitted_dispersion, linear_hac,
+    subsample_checks, period_indicator, indicator_dates, weighted_alignment,
+    diagnostic_samples, diagnostic_settings.
   Markov_run_manifest.json
-    Input SHA-256 hashes, model count, correction family, convergence and
-    warning counts. Input hashes are verified again before final export.
+    Input SHA-256 hashes, model count, the three correction families,
+    convergence/warning counts, and supplementary diagnostic parameters.
+    Input hashes are verified again before final export.
 
 Existing integration files keep their names and worksheet schemas:
   gpr_ms_state_probabilities_state1.xlsx
@@ -156,8 +162,8 @@ Existing integration files keep their names and worksheet schemas:
   cross_state_equality_tests.xlsx
     equality_tests: 120 individual slopes with raw p-values.
   cross_state_comprehensive_tests.xlsx
-    individual_tests: 30 levels plus 120 slopes; BH q-values for slopes only.
-    joint_slope_tests: 30 joint tests with raw p-values.
+    individual_tests: 30 levels and 120 slopes, with independent BH families.
+    joint_slope_tests: 30 joint tests with raw p-values and their own BH q-values.
 
 All XLSX files use readable headers, frozen header rows, filters and consistent
 number/date formatting. The probability workbook stays active on
@@ -184,11 +190,71 @@ eight windows, respectively; existing event IDs remain stable (E16 is absent).
 R reads its Markov probabilities from output/ and writes PDF figures to Fig/.
 Match R's SHOCK_LABEL and STATE_TO_PLOT to the Python workbook selection.
 
-8. VERIFICATION
----------------
-The updated notebook was parsed and run through all five code stages using
-the supplied inputs. The regression specification was retained, and final
-means/probabilities/raw tests were compared with the previous saved outputs.
-Only individual-slope BH q-values change with the corrected family. Selected
-figure PDFs were regenerated from the existing resilience workbook and
-rendered to inspect text placement and the revised CPU event list.
+8. SUPPLEMENTARY CONDITIONAL DIAGNOSTICS
+----------------------------------------
+Stage 5 implements the three diagnostic tables in the current supplementary
+appendix and stores their results in the same final XLSX/HTML report.
+
+macro_summary / fitted_dispersion / linear_hac:
+  Evaluate X_t' beta_s for both state-specific slope vectors over the same
+  full-sample conditioning observations, with population SD (ddof=0). Repeat
+  the dispersion calculation after omitting March-December 2020; coefficients
+  are held fixed. Count unadjusted within-state and linear OLS-HAC detections.
+
+subsample_checks:
+  Select rows using the original individual-slope BH q < 0.05. For those rows,
+  fit a linear OLS-HAC benchmark and probability-weighted regressions before
+  January 2021 and after excluding March-December 2020. There is no new Markov
+  fit or subset standardization. Excluded rows are removed before HAC, so the
+  retained observations on either side of the gap become adjacent.
+
+period_indicator / indicator_dates:
+  Fit separate state-weighted regressions with an intercept, the four original
+  standardized conditioning variables, and D_t = 1 from January 2021. Refit
+  these weighted regressions with alternative dates March 2020 and February
+  2022. These are chosen sensitivity dates, not estimated break points.
+
+  Signed ratio = (beta_2,D - beta_1,D) / (beta_2,MS - beta_1,MS).
+
+  Negative ratios indicate sign reversals. Ratios are not explained-variance
+  shares or causal contributions. No new cross-state equality test,
+  coefficient-change test, or multiplicity adjustment is added to these rows.
+
+All weighted checks retain the full-sample smoothed probabilities, independently
+of the probability type selected for R export. The numerical probability floor
+is 1e-6, matching the original table-generating scripts; the raw probability
+exports are untouched. Non-finite probabilities raise an error. All diagnostics
+use HAC with six lags, the Bartlett kernel, no small-sample correction, and the
+statsmodels normal-reference setting (use_t=False). Parenthesized weighted
+statistics are coefficients divided by their HAC standard errors.
+
+The baseline sample has 166 months, 131 before 2021, and 156 after the ten 2020
+months are omitted. Indicator-one counts are 45, 35 and 22 for the three dates.
+weighted_alignment checks the no-indicator weighted slopes against their
+original Markov counterparts; the appendix reports agreement within 0.002.
+Full settings and sample counts are exported, rather than inferred from labels.
+
+9. VERIFY AGAINST THE MANUSCRIPT
+--------------------------------
+The optional checker compares computed workbook values to the supplied TeX.
+It does not supply any estimation input and does not edit either manuscript.
+From the project root, after running all notebook stages:
+
+  python3 "Energy Economics Code/python code/verify_appendix_results.py" \
+    --appendix-tex "/path/to/Supplementary_Appendix.tex" \
+    --main-tex "/path/to/main_J1108.tex"
+
+The checker covers the three supplementary diagnostic tables and all 60
+conditional-level/joint-slope Wald entries and BH significance labels in main
+Panels C. Numbers are compared at their displayed precision; inequality
+entries such as p < 0.001 are checked as inequalities. It also checks sample
+sizes and the weighted/Markov alignment bound.
+
+Outputs beside Markov_results.xlsx:
+  Appendix_verification.csv   Every comparison and its pass/fail status.
+  Appendix_verification.json  Counts and SHA-256 hashes of the supplied TeX files.
+
+A mismatch produces a nonzero exit code. The current baseline was run through
+all six code stages, preserving one Markov estimation pass and one final report.
+The diagnostic estimates were compared directly with the current appendix;
+raw baseline estimates and probabilities were checked against the prior run.
