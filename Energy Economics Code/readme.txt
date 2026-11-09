@@ -64,7 +64,8 @@ Python:
 R:
   readxl, tseries, e1071, ggplot2, sysfonts, showtext, and grid.
   grid is supplied with R. Font paths in the plotting script use macOS
-  Times New Roman defaults; configure those paths for another platform.
+  Times New Roman defaults with a sans-serif fallback when the files are
+  absent. Configure those paths to use another installed font.
 
 4. STEP 1: ESTIMATE THE TVP-VAR-SV AND EXPORT GIRFs
 -------------------------------------------------
@@ -122,7 +123,7 @@ be expanded, while all numerical estimates and test rows remain in the XLSX.
 The existing probability/test workbook names and R worksheet schemas are kept.
 
 BH uses separate families of 30 conditional levels, 120 individual slopes and
-30 joint-slope tests under ALL, matching main_J1108.tex and the appendix.
+30 joint-slope tests under ALL, matching the main article and the appendix.
 The report retains the main regression tables, state probabilities and the
 120 individual slope comparisons in the updated appendix. See
 python code/readme.txt for the current scope and output list.
@@ -177,7 +178,8 @@ with the MATLAB diagnostic figures. The Markov block still reads its input
 workbooks from python code/output/; SHOCK_LABEL and STATE_TO_PLOT select them.
 
 Block 3 reads the three supplied H = 6, 8, and 10 workbooks from
-Energy Economics Data/horizon_resilience/. These archived comparison inputs
+Energy Economics Data/horizon_resilience/. Set TARGET_SHOCK to GPR, CPU, and
+OPU in turn; the selection controls both the data and filename. These comparison inputs
 preserve the existing figure data. See the Data and MATLAB READMEs for their
 layout and the settings needed to regenerate alternative horizons.
 

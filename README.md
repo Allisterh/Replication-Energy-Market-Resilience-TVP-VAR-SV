@@ -48,6 +48,7 @@ Please keep both `Energy Economics Code` and `Energy Economics Data` folders und
     ├── python code/              # Markov regime-switching models & Wald hypothesis tests
     │   ├── Markov.ipynb        # Complete self-contained Python workflow
     │   ├── readme.txt
+    │   ├── requirements.txt    # Tested numerical/reporting package versions
     │   └── output/
     └── r code/                   # Descriptive statistics tables & figure rendering
         ├── ee_descriptive_statistics.r
@@ -70,14 +71,15 @@ Detailed instructions: [Code workflow](Energy%20Economics%20Code/readme.txt),
   - Statistics and Machine Learning Toolbox
   - Spreadsheet I/O support
 - **Python (>= 3.9):**
-  - Packages: `jupyter`, `numpy`, `pandas`, `scipy`, `statsmodels`, `openpyxl`
+  - Packages: a Jupyter frontend, `numpy`, `pandas`, `scipy`, `statsmodels`, `openpyxl`, `IPython`.
+  - From `Energy Economics Code/python code/`, install the tested analysis versions with
+    `python3 -m pip install -r requirements.txt jupyterlab`.
 - **R (>= 4.0):**
   - Packages: `readxl`, `tseries`, `e1071`, `ggplot2`, `sysfonts`, `showtext`, `grid`
 
-The R font paths use macOS Times New Roman files. On another platform, configure
-the font paths in each plotting block before running it. Block 1 requires the
-four configured fonts; Blocks 2-4 use a sans-serif fallback when those files are
-absent. See the R README for the exact font settings.
+The R font paths use macOS Times New Roman files. All plotting blocks use a
+sans-serif fallback when those files are absent. Configure the font paths to
+use another installed font; see the R README for the exact settings.
 
 ---
 
@@ -96,6 +98,11 @@ absent. See the R README for the exact font settings.
    - Computes Resilience Intensity (RI) and Resilience Duration (RD).
    - Generates `resilience_metrics.xlsx` (166 months $\times$ 64 shock-response combinations).
    - A precomputed `resilience_metrics.xlsx` is included, so downstream Python/R analyses can start from that workbook without rerunning Steps 1-2.
+
+The appendix's constant-parameter VAR benchmark is available separately. In
+`matlab code/`, run `results = static_var_main;`. It uses the same prepared
+inputs and exports the benchmark and TVP comparisons to `static_var_output/`.
+See [the benchmark guide](Energy%20Economics%20Code/matlab%20code/readme_static_var.txt).
 
 ### Step 3: Estimate Markov Regime-Switching Models (Python)
 1. Start Jupyter Notebook in `Energy Economics Code/python code/`.
@@ -153,7 +160,8 @@ The plotting file contains four complete blocks:
 - **Block 1:** Conceptual resilience schematic.
 - **Block 2:** Baseline RI/RD figures for GPR, CPU, and OPU. The CPU list follows the revised appendix's eight policy episodes, excluding the Indonesia coal ban.
 - **Block 3:** Comparison across $H = 6, 8, 10$, using the three supplied
-  workbooks in `Energy Economics Data/horizon_resilience/`.
+  workbooks in `Energy Economics Data/horizon_resilience/`. Set `TARGET_SHOCK`
+  to GPR, CPU, and OPU in turn to reproduce all three comparisons.
 - **Block 4:** Smoothed regime probabilities from the Python outputs.
 
 All PDFs are saved in `<project root>/Fig/`, which is created automatically.

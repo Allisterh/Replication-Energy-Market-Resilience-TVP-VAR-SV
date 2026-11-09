@@ -23,14 +23,12 @@ library(showtext)
 
   font_files <- c(font_regular, font_bold, font_italic, font_bolditalic)
 
-  if (!all(file.exists(font_files))) {
-    stop("Times New Roman font files not found. Please check the font paths.")
+  FONT_FAMILY <- "sans"
+  if (all(file.exists(font_files))) {
+    font_add(family = "Times New Roman", regular = font_regular, bold = font_bold,
+      italic = font_italic, bolditalic = font_bolditalic)
+    FONT_FAMILY <- "Times New Roman"
   }
-
-  font_add(family = "Times New Roman", regular = font_regular, bold = font_bold,
-    italic = font_italic, bolditalic = font_bolditalic)
-
-  FONT_FAMILY <- "Times New Roman"
 
   # 2. Output device
   # Find the package root, including when R starts in a code subdirectory.
@@ -345,6 +343,9 @@ library(showtext)
   # 7. Finish
   showtext_end()
   dev.off()
+  # Also provide the filename used by the main article.
+  invisible(file.copy(file.path(FIG_DIR, "r_plot_resilience_abc_vertical_re.pdf"),
+    file.path(FIG_DIR, "r_plot_resilience_abc_vertical.pdf"), overwrite = TRUE))
 } # Three vertical resilience schematic panels used in the final manuscript
 
 {
@@ -826,7 +827,7 @@ library(showtext)
   }
 
   # 2) Basic settings
-  TARGET_SHOCK <- "GPR" # Used only to name the output file
+  TARGET_SHOCK <- "GPR" # Choose "GPR", "CPU", or "OPU" for data and filename.
 
   # Find the package root, including when R starts in a code subdirectory.
   PROJECT_DIR <- (function() {
@@ -900,8 +901,12 @@ library(showtext)
   RD_STEP <- NULL
 
   # 6) Market mapping
-  market_var_map <- c("OIL" = "Var6", "NG" = "Var7", "COAL" = "Var8", "ERIX" = "Var9",
-    "EUA" = "Var10")
+  horizon_var_maps <- list(
+    GPR = c(OIL = "Var6", NG = "Var7", COAL = "Var8", ERIX = "Var9", EUA = "Var10"),
+    CPU = c(OIL = "Var14", NG = "Var15", COAL = "Var16", ERIX = "Var17", EUA = "Var18"),
+    OPU = c(OIL = "Var22", NG = "Var23", COAL = "Var24", ERIX = "Var25", EUA = "Var26"))
+  TARGET_SHOCK <- match.arg(TARGET_SHOCK, names(horizon_var_maps))
+  market_var_map <- horizon_var_maps[[TARGET_SHOCK]]
 
   market_order <- c("OIL", "NG", "COAL", "ERIX", "EUA")
 

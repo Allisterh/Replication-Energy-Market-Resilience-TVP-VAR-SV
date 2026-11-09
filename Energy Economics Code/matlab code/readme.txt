@@ -324,3 +324,25 @@ Use a separate working copy when generating alternatives so the main H = 8
 analysis workbooks remain available for the baseline Markov and R workflows.
 The files packaged for the comparison were copied from the existing analysis;
 this path update did not re-estimate them.
+
+10. OPTIONAL STATIC VAR BENCHMARK
+---------------------------------
+Run the new constant-parameter VAR and resilience benchmark with:
+
+  results = static_var_main;
+
+The new functions static_var_main.m, static_var_fit.m, and static_resilience.m
+use the same prepared VAR workbook, eight-variable order, full-sample
+standardization, one lag, impact-inclusive horizons 0:8, generalized shock
+normalization, and RI/RD formulas as the baseline. Estimation uses OLS with
+a constant intercept and innovation covariance.
+
+All benchmark outputs are written separately in static_var_output/. The
+static_var_summary.xlsx workbook includes 15 uncertainty-market RI/RD pairs
+and an optional comparison with the means and ranks of the existing monthly
+TVP metrics. The original TVP analysis files are only read, not replaced.
+Static RI/RD are constant for each pair; their repeated monthly export is
+for alignment and should not be passed to the Markov estimation.
+
+See readme_static_var.txt for settings, formulas, output sheets, comparison
+definitions, and MATLAB requirements.

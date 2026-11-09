@@ -30,9 +30,9 @@ The font settings use these macOS files:
   /System/Library/Fonts/Supplemental/Times New Roman Italic.ttf
   /System/Library/Fonts/Supplemental/Times New Roman Bold Italic.ttf
 
-Block 1 requires all four fonts and stops if any are absent. Blocks 2-4 use
-Times New Roman when available and otherwise use a sans-serif fallback.
-Configure the font paths within each block for another computer.
+All four blocks use Times New Roman when the configured font files are
+available and otherwise use a sans-serif fallback. Configure the font paths
+within each block to use another installed font.
 
 3. PROJECT ROOT AND RUNNING ORDER
 --------------------------------
@@ -134,7 +134,8 @@ It uses rows 2:167 of the 167-row macrofinancial file, standardized using the
 5. PLOTTING BLOCKS AND OUTPUTS
 ------------------------------
 Block 1. Three-panel resilience schematic (6.2 x 12.2 inches).
-  Output: r_plot_resilience_abc_vertical_re.pdf
+  Output: r_plot_resilience_abc_vertical.pdf (main-article filename).
+  The identical r_plot_resilience_abc_vertical_re.pdf is retained as an alias.
   Folder: <PROJECT_DIR>/Fig/.
 
 Block 2. GPR/CPU/OPU baseline figures (each 12 x 16 inches, 6 x 2 layout).
@@ -150,11 +151,13 @@ Block 3. Horizon comparison (12 x 16 inches, five market rows plus legend).
   Inputs: resilience_metrics_median6.xlsx, resilience_metrics_median.xlsx,
           resilience_metrics_median10.xlsx (H = 6, 8, and 10).
   Input folder: <PROJECT_DIR>/Energy Economics Data/horizon_resilience/
-  Output: gpr_resilience_H_comparison_academic_no_shades.pdf
+  Default output: gpr_resilience_H_comparison_academic_no_shades.pdf
   Folder: <PROJECT_DIR>/Fig/.
   The archived workbooks preserve the original comparison inputs and are
   separate from the main MATLAB baseline workbook. There are no event shades
-  or labels. The mapping stays GPR (Var6-Var10); TARGET_SHOCK names the PDF only.
+  or labels. Set TARGET_SHOCK to GPR, CPU, or OPU; it selects both the data
+  mapping and the output filename. Run this block for all three selections
+  to reproduce the three appendix horizon-comparison figures.
 
 Block 4. Markov probabilities and resilience (12 x 16 inches, 5 x 2 plus legend).
   Input folder: <PROJECT_DIR>/Energy Economics Code/python code/output/

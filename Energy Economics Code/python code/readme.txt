@@ -8,6 +8,7 @@ Markov.ipynb contains the complete Python workflow. There are no project-local
 
   Markov.ipynb   Model estimation, state probabilities, Wald tests and final reporting.
   readme.txt    This guide.
+  requirements.txt  Numerical and reporting package versions used for the outputs.
   output/       Final reports and the existing R integration workbooks.
 
 Open Markov.ipynb, restart the kernel, and run all five code stages in order:
@@ -44,7 +45,10 @@ Destination:
 
 Requirements:
   Python >= 3.9, numpy, pandas, scipy, statsmodels, openpyxl, IPython, Jupyter.
-  Example: python3 -m pip install numpy pandas scipy statsmodels openpyxl jupyterlab
+  Tested interpreter: Python 3.9.7.
+  From python code/: python3 -m pip install -r requirements.txt jupyterlab
+  requirements.txt pins the tested numerical/reporting dependencies; the Jupyter
+  frontend is installed separately.
 
 The resilience workbook supplies t, Variable, RP and RD; RP is reported as RI.
 The baseline has 166 observations, February 2010-November 2023 (t=2,...,167).
@@ -139,9 +143,8 @@ Existing R integration and test files retain their names and schemas:
 
 XLSX files have formatted headers, frozen rows, filters and readable column/row
 sizes. STATE_TO_PLOT=2 changes probability filenames to state2.xlsx; both state
-columns remain available. Files ending _no100.xlsx are earlier alternatives,
-not default inputs or outputs. R reads the probability files from output/ and
-writes figures to the project-root Fig/ directory.
+columns remain available. R reads the probability files from output/ and writes figures to the
+project-root Fig/ directory.
 
 6. VALIDATION
 ---------------
