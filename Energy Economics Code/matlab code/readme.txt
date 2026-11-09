@@ -19,8 +19,7 @@ function's location and created automatically when needed.
 
 Step 1. Keep Energy Economics Code and Energy Economics Data as sibling folders.
         Open tvpvar_main.m from this matlab code folder. It resolves the input
-        Energy Economics Data/VAR_100data.xlsx from its own script location,
-        so the parent directory can be moved without editing a personal path.
+        Energy Economics Data/VAR_100data.xlsx relative to its script location.
 
 Step 2. Run tvpvar_main.m. The script ends at:
 
@@ -32,14 +31,10 @@ Step 3. In the same Current Folder, run the separate resilience script:
 
           resilience
 
-        It reads tvpvar_imp.xlsx and writes resilience_metrics.xlsx. It clears
-        the workspace at the start, so all inputs for this stage come from the
-        exported workbook. MCMC draws do not have to remain in the workspace.
+        It starts with a cleared workspace, reads tvpvar_imp.xlsx, and writes
+        resilience_metrics.xlsx.
 
-The Time argument is passed to mcmc_girf_median(), but that function currently
-does not use either its datetime or timeformat argument in its calculations.
-
-The scripts reuse the existing output filenames. Keep results from different
+Each run writes the configured output filenames. Keep results from different
 parameter settings in separate directories if they need to be retained.
 
 2. MATLAB REQUIREMENTS
@@ -66,15 +61,14 @@ has a date column followed by eight numerical series in this exact order:
   Column 9: EUA
 
 The estimation data are selected with data(:, 2:9). The names in asvar must
-match these eight numerical columns. The date column is assigned to Time.
+match these eight numerical columns.
 The baseline input contains 167 monthly observations, January 2010 through
 November 2023. With one VAR lag, valid GIRFs and resilience measures cover
 166 months, February 2010 through November 2023.
 
 The input already contains the prepared energy-market returns and uncertainty
 indices. zscore(ydata) standardizes each numerical series to mean zero and unit
-sample standard deviation before estimation. The MATLAB script does not apply
-another return transformation to these input columns.
+sample standard deviation before estimation.
 
 4. KEY SETTINGS IN tvpvar_main.m
 -------------------------------
@@ -105,9 +99,8 @@ a one-standard-deviation innovation in the standardized system.
 
 The three covariance flags refer to innovations in the time-varying regression
 coefficients (beta), contemporaneous parameters (a), and log volatilities (h).
-All three are diagonal in the baseline. The h covariance flag set to 1 calls
-svsamp_mv(), which is not supplied in this folder; the supplied baseline uses
-svsamp.m with SigH = 0.
+All three are diagonal in the baseline. Use SigH = 0 with the supplied
+svsamp.m volatility sampler.
 
 Prior settings in the main script:
 
@@ -131,9 +124,9 @@ above describe the resulting priors for the actual variance parameters.
 Other baseline settings inside mcmc_girf_median.m:
 
   - nburn = round(0.1 * nsim) = 1000.
-  - The loop runs from -nburn through nsim, including zero. Draws are retained
-    only for iteration indices 1:10000, with no thinning. Thus 1001 preliminary
-    iterations (-1000 through 0) precede the 10000 retained draws.
+  - The loop runs from -nburn through nsim, including zero. Iterations 1:10000
+    provide the retained draws. The 1001 preliminary iterations run from
+    -1000 through 0.
   - Uniform and normal random-number generators are initialized with seed 2025.
   - Initial state priors are beta_1 ~ N(0, 10*I), a_1 ~ N(0, 10*I), and
     h_1 ~ N(0, 50*I) under the diagonal baseline.
@@ -182,8 +175,8 @@ The workbook has three header rows:
 The numerical response blocks start at row 4. Each sample period occupies
 N = H + 1 = 9 rows, with horizon labels 0:8. The sample index appears only in
 the first row of each block; the following eight cells in column A are blank.
-The first lagged sample period has no valid estimated GIRFs, so its response
-cells are empty. At the baseline, the sheet has 1506 rows and 66 columns.
+The initial period is reserved for VAR lag initialization, with empty response
+cells. At the baseline, the sheet has 1506 rows and 66 columns.
 
 6. KEY SETTINGS IN resilience.m: N AND THE FIRST VALID ROW
 ---------------------------------------------------------
@@ -198,15 +191,13 @@ For the baseline H = 8, the path is 0:8 and N = 9.
 
 Why does the data selection begin at row 13?
 
-  Excel rows 1-3:   three header rows; no numerical GIRF observations.
+  Excel rows 1-3:   three header rows containing variable and column labels.
   Excel rows 4-12:  nine response rows for t = 1; GIRF cells are empty because
-                    nlag = 1 leaves this initial period without valid responses.
+                    this is the initialization period for nlag = 1.
   Excel row 13:    t = 2, horizon 0; the first valid numerical GIRF observation.
 
 Thus data(13:end, :) keeps row 13 and all later rows. It skips the first
 12 rows: three header rows plus nine initially undefined response rows.
-The former Chinese comment saying "skip the first 13 header rows" was
-imprecise. The current English comment describes the actual selection.
 This row index assumes the current import preserves the worksheet's starting
 row; inspect the imported table when changing the spreadsheet layout or import
 options.
@@ -230,7 +221,7 @@ each retained t must have exactly N complete response rows.
 
 After removing the initial rows, the script forward-fills t within each block,
 then processes every response column in C:BN. Automatically generated table
-names Var3 through Var66 are retained as output identifiers.
+names Var3 through Var66 are used as output identifiers.
 
 7. RESILIENCE FORMULAS AND OUTPUT INTERPRETATION
 -----------------------------------------------
@@ -246,7 +237,7 @@ The code calculates resilience intensity using:
 
   RP = (N * h_bar - S) / (N * h_bar)
 
-RP is the existing Excel column name for the resilience intensity measure RI.
+RP is the Excel column name for the resilience intensity measure RI.
 Higher values indicate stronger relative shock absorption. h_bar is the peak
 absolute response within this particular time-specific GIRF path.
 
@@ -260,8 +251,6 @@ the impact response at horizon 0 receives weight 1, and the response at horizon
 
   RD = 1 + sum(h * a_h, h = 0,...,H) / S
 
-This records the existing indexing convention explicitly. The impact response
-is included in both RP and RD, and the formulas and weights are preserved.
 Lower RD indicates earlier concentration of the absolute response weight and
 faster relative recovery within the evaluated response window.
 
@@ -283,10 +272,10 @@ Mappings used by the R figures and Python Markov analysis are:
   CPU     Var14   Var15   Var16   Var17   Var18
   OPU     Var22   Var23   Var24   Var25   Var26
 
-Retain the original variable order when reproducing these mappings.
+Keep the specified variable order when reproducing these mappings.
 
-8. SUPPORTING FILES AND ENGLISH TRANSLATION
-------------------------------------------
+8. SUPPORTING FILES
+-------------------
 mcmc_girf_median.m performs MCMC sampling, GIRF summarization, diagnostics, and
 export. setvar.m initializes the data globals; setvar_girf.m configures the
 options. impulse_girf.m computes GIRFs and impulse.m computes conventional
@@ -294,18 +283,11 @@ impulse responses. drawimp.m remains available for separate response plots. The 
 helper functions support the state simulation smoother, stochastic volatility
 sampler, matrix construction, standardization, and convergence diagnostics.
 
-Chinese comments, plot-legend strings, and console messages have been replaced
-with English. drawimp.m has also been converted from its original GB18030
-encoding to an English UTF-8-compatible ASCII file. Estimation parameters,
-random-number calls, numerical formulas, export filenames, and output column
-identifiers are unchanged. tvpvar_main.m ends after MCMC estimation and export;
-resilience.m is run separately to construct the resilience metrics.
-
 9. ALTERNATIVE HORIZONS FOR THE COMPARISON FIGURE
 -----------------------------------------------
-The existing comparison inputs are supplied in:
+Precomputed comparison inputs are supplied in:
   Energy Economics Data/horizon_resilience/
-They can be plotted directly by R Block 3 without regenerating MCMC results.
+R Block 3 plots these workbooks directly.
 
 To generate another horizon, keep the driver impulse setting, resilience.m's
 N, and its first retained worksheet row consistent. For the supplied one-lag
@@ -322,16 +304,14 @@ data(first_row:end,:) in resilience.m before running those two stages.
 Retain each generated workbook separately under the listed comparison name.
 Use a separate working copy when generating alternatives so the main H = 8
 analysis workbooks remain available for the baseline Markov and R workflows.
-The files packaged for the comparison were copied from the existing analysis;
-this path update did not re-estimate them.
 
 10. OPTIONAL STATIC VAR BENCHMARK
 ---------------------------------
-Run the new constant-parameter VAR and resilience benchmark with:
+Run the constant-parameter VAR and resilience benchmark with:
 
   results = static_var_main;
 
-The new functions static_var_main.m, static_var_fit.m, and static_resilience.m
+The functions static_var_main.m, static_var_fit.m, and static_resilience.m
 use the same prepared VAR workbook, eight-variable order, full-sample
 standardization, one lag, impact-inclusive horizons 0:8, generalized shock
 normalization, and RI/RD formulas as the baseline. Estimation uses OLS with
@@ -339,10 +319,9 @@ a constant intercept and innovation covariance.
 
 All benchmark outputs are written separately in static_var_output/. The
 static_var_summary.xlsx workbook includes 15 uncertainty-market RI/RD pairs
-and an optional comparison with the means and ranks of the existing monthly
-TVP metrics. The original TVP analysis files are only read, not replaced.
-Static RI/RD are constant for each pair; their repeated monthly export is
-for alignment and should not be passed to the Markov estimation.
+and an optional comparison with the means and ranks of the monthly TVP metrics. Static RI/RD are constant for each pair; the monthly export aligns
+these estimates with the TVP calendar. The Markov workflow uses the time-varying
+resilience_metrics.xlsx produced by resilience.m.
 
 See readme_static_var.txt for settings, formulas, output sheets, comparison
 definitions, and MATLAB requirements.

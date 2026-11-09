@@ -3,7 +3,7 @@ STATIC VAR BENCHMARK AND RESILIENCE MEASURES
 
 1. RUNNING THE BENCHMARK
 ------------------------
-Keep these three new functions together in the existing matlab code folder:
+Keep these three functions together in the matlab code folder:
 
   static_var_main.m     Data import, standardization, exports, and comparison.
   static_var_fit.m      OLS estimation and generalized impulse responses.
@@ -14,23 +14,19 @@ In MATLAB, set the Current Folder to this matlab code folder and run:
   results = static_var_main;
 
 This single command estimates the static VAR, computes resilience, and exports
-the results. The TVP-VAR does not need to be re-estimated. The default input is
-resolved relative to the function location:
+the results. The default input is resolved relative to the function location:
 
   <project root>/Energy Economics Data/VAR_100data.xlsx
 
-Outputs go to matlab code/static_var_output/. The existing tvpvar_imp.xlsx and
-resilience_metrics.xlsx are not overwritten. Re-running this benchmark replaces
-its own four output files in static_var_output/.
+Outputs go to matlab code/static_var_output/. Re-running the benchmark replaces
+its four output files in that folder.
 
 Optional path overrides are available for separate data/output locations:
 
   results = static_var_main(input_file, output_dir, tvp_file);
 
-Pass '' as tvp_file to run without the optional comparison. A missing default
-TVP workbook produces a warning and does not prevent static estimation. A
-supplied TVP workbook with invalid columns or unmatched observations raises an
-error, so an invalid comparison is not silently reported.
+Pass '' as tvp_file to compute the static estimates alone. For the TVP comparison,
+supply a workbook with t, Variable, RP, and RD for the same 166 monthly dates.
 
 2. SPECIFICATION AND MATCHING SETTINGS
 --------------------------------------
@@ -49,17 +45,15 @@ indexing of tvpvar_main.m and resilience.m:
   Number of response points N: H+1=9.
   Matched TVP comparison months: February 2010-November 2023 (166 months).
 
-Do not difference or multiply the input returns by 100 again: the workbook
-already contains the prepared uncertainty levels and percentage returns.
-The sample covariance divisor is residual degrees of freedom, not the Gaussian
-MLE divisor T-p. This scalar choice changes GIRF amplitudes but not RI or RD.
+Use the prepared uncertainty levels and percentage returns directly.
+The covariance divisor is the residual degrees of freedom, as specified above.
 
 The model is:
 
   y_t = c + B_1*y_(t-1) + ... + B_p*y_(t-p) + u_t,
   E(u_t*u_t') = Sigma.
 
-The function uses generalized innovations, without Cholesky orthogonalization:
+The function uses generalized innovations:
 
   g_(h,j) = Phi_h * Sigma(:,j) / sqrt(Sigma(j,j)),  h=0,...,H.
 
@@ -72,8 +66,7 @@ lag_order and max_horizon are settings near the top of static_var_main.m.
 static_var_fit supports other positive lag orders and nonnegative horizons.
 The optional comparison runs only when the static settings match the declared
 tvp_lag_order and tvp_max_horizon settings (default 1 and 8). Verify these TVP
-settings against the run that produced the existing workbook: the old metrics
-workbook itself does not store lag order or response-horizon metadata.
+settings against the run that produced the TVP workbook.
 
 3. RESILIENCE DEFINITIONS
 -------------------------
@@ -82,18 +75,16 @@ For a_h=abs(g_h), h=0,...,H, N=H+1, P=max(a_h), and S=sum(a_h):
   RI = RP = (N*P-S)/(N*P).
   RD = sum((h+1)*a_h)/S = 1 + sum(h*a_h)/S.
 
-RP is retained as the workbook column name to match the existing pipeline.
+RP is the workbook column name for RI throughout the workflow.
 Both measures include the impact response h=0. RD uses weights 1:9 at H=8,
-exactly as the supplied resilience.m. This is a response-weighted timing measure
-with the existing one-based offset, not an exact time to full recovery.
-Higher RI means stronger relative absorption; lower RD means earlier response
-concentration. An identically zero response has undefined RI/RD and is exported
-as NaN rather than assigned an artificial resilience score.
+as in resilience.m. Higher RI means stronger relative absorption; lower RD
+means earlier response concentration. An identically zero response is exported
+as NaN.
 
-Each shock-response pair has ONE static GIRF and ONE static RI/RD pair. Repeating
-these estimates at monthly dates does not create time variation. Do not use the
-constant repeated panel to estimate a Markov-switching model or claim a monthly
-resilience trajectory. It is provided for matching/overlaying the existing data.
+Each shock-response pair has one static GIRF and one static RI/RD pair.
+The monthly panel repeats these constant estimates for alignment with the TVP
+calendar. The Markov workflow uses the time-varying resilience_metrics.xlsx
+produced by resilience.m.
 
 4. OUTPUT FILES
 ----------------
@@ -105,8 +96,8 @@ resilience trajectory. It is provided for matching/overlaying the existing data.
 
   static_resilience_metrics.xlsx
     Compatible columns t, Variable, RP, RD; 166*64=10624 data rows at baseline.
-    Var3:Var66 identifiers preserve the existing mapping. Static values repeat
-    for every matched t. This file is not the time-varying resilience input.
+    Var3:Var66 identifiers follow the mapping below. Static values repeat
+    for every matched t.
 
   static_var_summary.xlsx
     all_pairs:           64 unique shock-response RI/RD estimates.
@@ -115,13 +106,13 @@ resilience trajectory. It is provided for matching/overlaying the existing data.
     coefficients:        OLS estimates; columns are response equations.
     residual_covariance: Constant reduced-form innovation covariance Sigma.
     diagnostics:         Sample sizes, settings, residual df, spectral radius.
-    tvp_comparison:      Optional comparison with existing monthly TVP metrics.
+    tvp_comparison:      Optional comparison with monthly TVP metrics.
 
   static_var_results.mat
     results structure containing coefficients, covariance, residuals, GIRFs,
     standardized inputs, standardization constants, dates, and result tables.
 
-The existing energy-response mappings remain:
+Energy-response mappings:
 
   Shock   OIL     NG      COAL    ERIX    EUA
   GPR     Var6    Var7    Var8    Var9    Var10
@@ -130,40 +121,18 @@ The existing energy-response mappings remain:
 
 5. HOW TO READ THE TVP COMPARISON
 --------------------------------
-The default TVP input is the existing matlab code/resilience_metrics.xlsx.
-It is only read. The code validates one finite RI/RD observation for every
+The default TVP input is matlab code/resilience_metrics.xlsx.
+The code validates one finite RI/RD observation for every
 matching t in each of the 15 uncertainty-market combinations. Confirm that this
 workbook comes from the same original data, order, standardization, and horizon.
 
 The tvp_comparison sheet reports static RI/RD, the mean and time-series SD of
 monthly TVP RI/RD, static-minus-TVP-mean differences, and market ranks within
 each uncertainty source. Rank 1 denotes higher RI or lower RD; ties use average
-ranks. The TVP SD describes variation across dates, not an estimation standard
-error. TVP ranks use the means of monthly metrics, not metrics of an averaged
-GIRF. No significance test or confidence interval is implied by these columns.
-
-This benchmark compares a constant-coefficient, constant-covariance OLS VAR
-with the existing Bayesian TVP-VAR-SV results. Differences may reflect both
-time variation and estimation/summarization choices. It is a descriptive
-benchmark comparison, not a test that isolates the contribution of each TVP
-component or establishes predictive superiority. It addresses the static-VAR
-alternative; spillover and event-study alternatives require their own metrics.
+ranks. TVP SD is the sample standard deviation across the monthly estimates.
+TVP ranks are based on the means of monthly metrics.
 
 6. SOFTWARE
 ------------
-MATLAB with readtable, writecell, writematrix, and writetable is required.
-Only base MATLAB numerical functions are used; this new benchmark does not
-require Econometrics Toolbox or Statistics and Machine Learning Toolbox.
-The baseline TVP functions and their dependencies are unchanged.
-
-7. VERIFICATION
-----------------
-Verified in MATLAB R2023b on 2026-11-02 using synthetic data only. Code Analyzer
-reported no findings for the three new .m files. The checks covered OLS matrix
-orientation, VAR(1) and VAR(2) GIRFs, variable-order invariance, RI/RD scale and
-sign invariance, zero-response handling, spreadsheet layouts, and the optional
-15-pair TVP comparison. The constant-parameter GIRFs matched impulse_girf.m,
-and an unmodified copy of resilience.m reproduced all 10624 synthetic monthly
-RI/RD output rows. The verification process completed with exit status zero.
-The study workbook was inspected for its input schema but was not estimated;
-no empirical static-VAR results have been generated by this verification.
+Base MATLAB with readtable, writecell, writematrix, and writetable.
+The benchmark uses base MATLAB numerical functions.

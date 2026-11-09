@@ -18,8 +18,7 @@ The horizon_resilience/ subfolder additionally contains three archived
 resilience workbooks for the H = 6, 8, and 10 comparison figure (Section 8).
 
 The preferred VAR and variable-summary input is VAR_100data.xlsx. The CSV
-VAR_data.csv retains decimal energy returns as a reference series. It is not
-the percentage-scale input configured in the main scripts.
+VAR_data.csv provides decimal energy returns as a reference series.
 
 2. FILE INVENTORY
 -----------------
@@ -32,7 +31,7 @@ markov_scale_data_166.csv     166           Feb 2010-Nov 2023         Python Mar
 
 The workbook contains one worksheet, VAR_100data. The listed observation counts
 exclude the header row. All four primary input files have a first column named
-date. These primary files have no missing cells or duplicate monthly dates.
+date, with complete observations and unique monthly dates.
 
 Dates are stored as month-start ISO 8601 strings, for example:
   2010-01-01T00:00:00Z
@@ -44,11 +43,11 @@ Columns, in the required order, are:
 
   date, GPR, CPU, OPU, OIL, NG, COAL, ERIX, EUA
 
-The existing date column is also the calendar for the R baseline and
+The date column is also the calendar for the R baseline and
 horizon-comparison figures. Both plotting blocks read it automatically from
 sheet VAR_100data. Its 167 monthly dates cover January 2010-November 2023;
 observations 2-167 provide the 166 dates for resilience and Markov analysis,
-February 2010-November 2023. No separate date workbook is needed.
+February 2010-November 2023.
 
 Uncertainty indicators:
   GPR: geopolitical risk index, in index levels.
@@ -66,13 +65,10 @@ The five energy columns contain monthly log returns multiplied by 100:
 
   return_percent = 100 * log(P_current / P_previous)
 
-The uncertainty columns are untransformed index levels. These prepared inputs
-are not standardized within this file. tvpvar_main.m standardizes the eight
+The uncertainty columns are index levels. tvpvar_main.m standardizes the eight
 numerical columns using zscore() before fitting the TVP-VAR-SV model. The R
 variable-summary script describes the workbook in its supplied units.
 
-The workbook contains transformed returns and index observations, rather than
-the original daily prices or the energy price levels used to construct returns.
 Variable definitions and source citations are provided in the manuscript's
 variable-definition and data-source table.
 
@@ -86,11 +82,10 @@ log returns:
   return_percent = 100 * return_decimal
 
 For example, the first OIL observation is approximately -0.086673 in the CSV
-and -8.667314 in the workbook. The unit distinction applies only to OIL, NG,
-COAL, ERIX, and EUA. GPR, CPU, OPU, and the date labels are unchanged.
+and -8.667314 in the workbook. The return-unit conversion applies to OIL, NG,
+COAL, ERIX, and EUA. Both files share the same GPR, CPU, OPU, and date values.
 
-The main scripts use the workbook directly. Keep its existing percentage-scale
-values when importing it; no further return scaling is needed.
+The main scripts use the percentage-scale workbook values directly.
 
 5. markov_100data_167.csv: UNSTANDARDIZED MACROFINANCIAL DATA
 -----------------------------------------------------------
@@ -111,8 +106,7 @@ analysis scales:
 Thus GSCPI uses a first difference, while the other three use log changes.
 The file is unstandardized and covers the full 167-month descriptive sample.
 ee_descriptive_statistics.r joins it to VAR_100data.xlsx by date for the
-main-variable summary table. It is separate from the standardized input used
-to estimate the Markov regressions.
+main-variable summary table.
 
 6. markov_scale_data_166.csv: STANDARDIZED MARKOV INPUT
 ------------------------------------------------------
@@ -139,16 +133,15 @@ the common chronological order when using this file.
 
 7. CONNECTION TO GENERATED RESILIENCE AND MODEL OUTPUTS
 -------------------------------------------------------
-The MATLAB VAR input has 167 months. With nlag = 1, the initial sample period
-has no valid estimated response path, leaving 166 resilience observations.
+The MATLAB VAR input has 167 months. With nlag = 1, resilience observations use
+sample periods 2:167, covering 166 months.
 The generated workbook is stored under the Code package:
 
   Energy Economics Code/matlab code/resilience_metrics.xlsx
 
 Its t indices run from 2 to 167 and correspond to February 2010-November 2023.
 Its columns are t, Variable, RP, and RD. RP is the output name for resilience
-intensity (RI). This is a generated result, not one of the four source inputs
-in the Data folder.
+intensity (RI).
 
 The Python notebook combines that resilience workbook with
 markov_scale_data_166.csv, then exports state probabilities and Wald tests to:
@@ -161,7 +154,7 @@ This accounts for the different sample lengths and units in the two stages.
 
 8. horizon_resilience/: HORIZON-COMPARISON INPUTS
 -----------------------------------------------
-This subfolder contains the existing analysis workbooks used by R Block 3:
+This subfolder contains the precomputed workbooks used by R Block 3:
 
   resilience_metrics_median6.xlsx   H = 6
   resilience_metrics_median.xlsx    H = 8
@@ -171,9 +164,7 @@ Each workbook contains t, Variable, RP, and RD, with 166 observations for each
 of the 64 shock-response combinations. The sample indices are t = 2,...,167,
 corresponding to February 2010-November 2023. These are precomputed resilience
 measures, separate from the four monthly VAR/macrofinancial source inputs.
-The original comparison files were copied without changing their contents.
 
-The R plotting script reads this packaged subfolder using PROJECT_DIR; no
-personal Desktop directory is required. Its comparison PDF is saved to the
-common <project root>/Fig/ folder. The MATLAB README, Section 9, describes the
+The R plotting script reads this subfolder using PROJECT_DIR and saves its
+comparison PDF to the common <project root>/Fig/ folder. The MATLAB README, Section 9, describes the
 H/N/worksheet-row settings for generating alternative-horizon workbooks.

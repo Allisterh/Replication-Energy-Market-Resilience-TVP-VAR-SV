@@ -101,26 +101,24 @@ undefined response rows for the initial lagged period. data(13:end,:) therefore
 skips 12 rows and keeps row 13 onward.
 
 The output contains 10624 data rows: 166 sample months times 64 shock-response
-combinations. Its columns are t, Variable, RP, and RD. RP is the retained column
-name for resilience intensity (RI). The existing RD implementation uses
+combinations. Its columns are t, Variable, RP, and RD. RP is the column name for
+resilience intensity (RI). RD uses
 one-based weights 1:9 on the exported horizons 0:8. Both formulas and their
 indexing conventions are explained in matlab code/readme.txt.
 
-The supplied baseline resilience workbook can be used to reproduce downstream
-analyses without re-running MCMC.
+Use the supplied baseline resilience workbook to start the downstream workflow
+at Step 3.
 
 6. STEP 3: RUN THE PYTHON MODELS AND FINAL REPORT
 ------------------------------------------------
 Open python code/Markov.ipynb and run its five code stages in order. The notebook
 is self-contained, including the final-report formatting helpers. Each
-selected model is fitted once;
-regression tables, economic labels, probabilities and Wald tests share that
-same result dictionary. The model specification and data mappings are retained.
+selected model is fitted once. Regression tables, economic labels, probabilities
+and Wald tests use the same fitted results.
 
 By default the notebook shows one final report. Start with output/
 Markov_results.html or Markov_results.xlsx. Detailed coefficient tables can
 be expanded, while all numerical estimates and test rows remain in the XLSX.
-The existing probability/test workbook names and R worksheet schemas are kept.
 
 BH uses separate families of 30 conditional levels, 120 individual slopes and
 30 joint-slope tests under ALL, matching the main article and the appendix.
@@ -159,12 +157,11 @@ For plotting, load the required packages (also listed at the top of the script):
   library(sysfonts)
   library(showtext)
 
-The existing date column in Energy Economics Data/VAR_100data.xlsx is read
+The date column in Energy Economics Data/VAR_100data.xlsx is read
 automatically by the baseline and horizon-comparison blocks. The full TVP-VAR
 input covers January 2010-November 2023 (167 months). The plots use observations
 2-167, February 2010-November 2023 (166 months), matching the resilience indices
 and Markov sample after the initial observation is lost to the one VAR lag.
-No external date workbook or manually created date object is required.
 
 Open r code/ee_plot_for_resilience.r and run the required complete blocks:
 
@@ -174,37 +171,33 @@ Open r code/ee_plot_for_resilience.r and run the required complete blocks:
   Block 4: Markov probability/metric figures from the Python exports.
 
 All four R plotting blocks write their PDFs to <project root>/Fig/, together
-with the MATLAB diagnostic figures. The Markov block still reads its input
+with the MATLAB diagnostic figures. The Markov block reads its input
 workbooks from python code/output/; SHOCK_LABEL and STATE_TO_PLOT select them.
 
 Block 3 reads the three supplied H = 6, 8, and 10 workbooks from
 Energy Economics Data/horizon_resilience/. Set TARGET_SHOCK to GPR, CPU, and
-OPU in turn; the selection controls both the data and filename. These comparison inputs
-preserve the existing figure data. See the Data and MATLAB READMEs for their
-layout and the settings needed to regenerate alternative horizons.
+OPU in turn; the selection controls both the data and filename. See the Data
+and MATLAB READMEs for their layout and the settings for alternative horizons.
 
 8. INPUT UNITS AND REPRODUCTION NOTES
 -------------------------------------
 Use VAR_100data.xlsx for the default VAR input and variable-summary table.
 Its five energy returns are in percent; its three uncertainty indices are in
 levels. VAR_data.csv contains decimal energy returns and is a reference copy
-in a different return unit. No further multiplication by 100 is required for
-the workbook. See the Data README for transformations and standardization.
+in a different return unit. Use the workbook values directly. See the Data
+README for transformations and standardization.
 
-Keep the original variable order, dates, and shock-response mappings when
-passing data between languages. Generated workbooks are outputs rather than
-replacements for the prepared source inputs. Running a stage again writes
-the same configured output filenames.
+Keep the specified variable order, dates, and shock-response mappings when
+passing data between languages. Running a stage again writes the same
+configured output filenames.
 
 9. OPTIONAL STATIC VAR BENCHMARK (MATLAB)
 ----------------------------------------
 From matlab code/, run results = static_var_main to estimate a constant-
 parameter OLS VAR using the same prepared inputs, one lag, generalized shock
-definition, horizons 0:8, and existing RI/RD formulas. The benchmark also
+definition, horizons 0:8, and RI/RD formulas. The benchmark also
 compares its 15 uncertainty-market RI/RD estimates with the corresponding
-means and ranks from the existing TVP resilience workbook, when available.
+means and ranks from the TVP resilience workbook, when available.
 
-Outputs are isolated in matlab code/static_var_output/. Existing TVP, Markov,
-and R inputs are not overwritten. See matlab code/readme_static_var.txt for
-the full workflow and interpretation of the static benchmark.
-
+Outputs are written to matlab code/static_var_output/. See
+matlab code/readme_static_var.txt for the benchmark workflow and output definitions.

@@ -12,14 +12,17 @@ This repository contains the replication data and code for the article:
 ## 1. Overview
 
 This study investigates energy market resilience to geopolitical risk (GPR), climate policy uncertainty (CPU), and oil price uncertainty (OPU) across five benchmarks:
+
 - **Fossil fuels:** Brent crude oil futures (OIL), Henry Hub natural gas futures (NG), Newcastle thermal coal futures (COAL)
 - **Low-carbon assets:** European Renewable Energy Total Return Index (ERIX), EU ETS carbon allowance futures (EUA)
 
 We measure resilience along two complementary dimensions:
+
 1. **Resilience Intensity (RI):** Captures relative shock absorption capacity by comparing the cumulative absolute response against a benchmark holding the peak response.
 2. **Resilience Duration (RD):** Quantifies effective recovery speed as the temporal centroid (center of mass) of the absolute response area.
 
 The empirical workflow consists of:
+
 - A **Time-Varying Parameter Vector Autoregression with Stochastic Volatility (TVP-VAR-SV)** to generate date-specific Generalized Impulse Response Functions (GIRFs) and time-varying RI and RD series.
 - **Two-state Markov regime-switching regressions** conditioning on four macro-financial variables (GSCPI, DXY, CPI, and Industrial Production) to assess state persistence and cross-state parameter differences.
 
@@ -38,7 +41,7 @@ Please keep both `Energy Economics Code` and `Energy Economics Data` folders und
 │   ├── VAR_data.csv              # Decimal-scale reference returns
 │   ├── markov_100data_167.csv    # Unstandardized macro-financial conditioning variables
 │   ├── markov_scale_data_166.csv # Standardized macro-financial variables (166 months)
-│   └── horizon_resilience/      # Existing H = 6, 8, 10 comparison workbooks
+│   └── horizon_resilience/      # H = 6, 8, 10 comparison workbooks
 ├── Energy Economics Code/
     ├── readme.txt
     ├── matlab code/              # TVP-VAR-SV MCMC estimation & RI/RD metric calculation
@@ -97,7 +100,7 @@ use another installed font; see the R README for the exact settings.
    - Reads `tvpvar_imp.xlsx`.
    - Computes Resilience Intensity (RI) and Resilience Duration (RD).
    - Generates `resilience_metrics.xlsx` (166 months $\times$ 64 shock-response combinations).
-   - A precomputed `resilience_metrics.xlsx` is included, so downstream Python/R analyses can start from that workbook without rerunning Steps 1-2.
+   - The supplied `resilience_metrics.xlsx` supports downstream Python/R replication starting at Step 3.
 
 The appendix's constant-parameter VAR benchmark is available separately. In
 `matlab code/`, run `results = static_var_main;`. It uses the same prepared
@@ -107,11 +110,11 @@ See [the benchmark guide](Energy%20Economics%20Code/matlab%20code/readme_static_
 ### Step 3: Estimate Markov Regime-Switching Models (Python)
 1. Start Jupyter Notebook in `Energy Economics Code/python code/`.
 2. Open and run all cells in `Markov.ipynb` sequentially.
-   - The self-contained notebook has five code stages. It fits each of the 30 two-state models once, then reuses the same fitted objects for coefficient tables, probabilities and Wald tests. No local Python helper files are needed.
+   - The self-contained notebook has five code stages. It fits each of the 30 two-state models once, then reuses the same fitted objects for coefficient tables, probabilities and Wald tests.
    - BH adjustment uses independent families of 30 conditional levels, 120 individual slopes and 30 joint-slope tests, matching the current main article and supplementary appendix.
    - Start with `python code/output/Markov_results.html` or `Markov_results.xlsx`; the notebook displays one final report with expandable coefficient tables.
    - The final workbook includes the current appendix's 120 individual slope comparisons.
-   - Existing probability and test workbooks remain available for R and numerical inspection. Optimizer warnings and convergence flags are retained in the final workbook.
+   - Probability and test workbooks provide R plotting inputs and numerical results. The final workbook includes convergence flags and optimizer messages.
 
 ### Step 4: Summary Tables and Figures (R)
 The R scripts locate `<project root>` by searching upward from a supplied
@@ -153,12 +156,10 @@ The baseline and horizon-comparison plotting blocks read it automatically:
   With one VAR lag, sample indices `t = 2,...,167` map to workbook observations
   2-167, excluding the first month.
 
-No separate date workbook or manually initialized date object is required.
-
 The plotting file contains four complete blocks:
 
 - **Block 1:** Conceptual resilience schematic.
-- **Block 2:** Baseline RI/RD figures for GPR, CPU, and OPU. The CPU list follows the revised appendix's eight policy episodes, excluding the Indonesia coal ban.
+- **Block 2:** Baseline RI/RD figures for GPR, CPU, and OPU. The CPU figure uses the appendix's eight policy episodes.
 - **Block 3:** Comparison across $H = 6, 8, 10$, using the three supplied
   workbooks in `Energy Economics Data/horizon_resilience/`. Set `TARGET_SHOCK`
   to GPR, CPU, and OPU in turn to reproduce all three comparisons.
@@ -168,9 +169,8 @@ All PDFs are saved in `<project root>/Fig/`, which is created automatically.
 Individual complete blocks can also be selected after loading the plotting
 packages. Each block initializes its paths; Blocks 2-3 also read their dates.
 
-The comparison workbooks preserve the existing analysis inputs. To regenerate
-alternative horizons, synchronize the MATLAB horizon, response-point count,
-and first retained worksheet row as documented in the MATLAB README.
+To generate alternative horizons, synchronize the MATLAB horizon, response-point
+count, and first data row as documented in the MATLAB README.
 
 ### Output locations
 
