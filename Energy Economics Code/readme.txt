@@ -58,8 +58,8 @@ MATLAB:
   Keep all supplied .m helper functions in the matlab code folder.
 
 Python:
-  Jupyter/IPython, numpy, pandas, scipy, statsmodels, openpyxl, matplotlib,
-  and requests. The Python README lists the checked package versions.
+  Jupyter/IPython, numpy, pandas, scipy, statsmodels and openpyxl.
+  All Python analysis and helper definitions are inside Markov.ipynb.
 
 R:
   readxl, tseries, e1071, ggplot2, sysfonts, showtext, and grid.
@@ -110,8 +110,9 @@ analyses without re-running MCMC.
 
 6. STEP 3: RUN THE PYTHON MODELS AND FINAL REPORT
 ------------------------------------------------
-Open python code/Markov.ipynb and run its six code stages in order. Keep
-markov_reporting.py and markov_diagnostics.py next to the notebook. Each selected model is fitted once;
+Open python code/Markov.ipynb and run its six code stages in order. The notebook
+is self-contained, including all reporting and verification helpers. Each
+selected model is fitted once;
 regression tables, economic labels, probabilities and Wald tests share that
 same result dictionary. The model specification and data mappings are retained.
 
@@ -125,8 +126,9 @@ BH uses separate families of 30 conditional levels, 120 individual slopes and
 The new supplementary stage reuses the fitted states for linear HAC benchmarks,
 weighted subsamples and three date-indicator sensitivity checks. It does not
 re-estimate the state process. Full settings and numerical details are stored
-in the final workbook. See python code/readme.txt for the independent TeX
-verification command and the complete output list.
+in the final workbook. Optional TeX verification is configured in Stage 6
+with VERIFY_MANUSCRIPT, APPENDIX_TEX and MAIN_TEX. See python code/readme.txt
+for settings and the complete output list.
 
 7. STEP 4: RUN THE R SUMMARIES AND FIGURES
 ----------------------------------------
@@ -207,9 +209,3 @@ Outputs are isolated in matlab code/static_var_output/. Existing TVP, Markov,
 and R inputs are not overwritten. See matlab code/readme_static_var.txt for
 the full workflow and interpretation of the static benchmark.
 
-10. SELECTED PYTHON RESILIENCE FIGURE
--------------------------------------
-Run python code/ee_plot_resilience_2x3.py for the selected 2 x 3 layout. It
-exports to Fig/ and uses the same baseline workbook/calendar as R. The revised
-CPU list contains eight policy episodes, matching Supplementary_Appendix.tex;
-E16 (Indonesia coal ban) is absent. See the dedicated Python figure README.

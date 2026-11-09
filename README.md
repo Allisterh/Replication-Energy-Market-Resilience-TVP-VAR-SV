@@ -46,17 +46,14 @@ Please keep both `Energy Economics Code` and `Energy Economics Data` folders und
     │   ├── resilience.m
     │   └── ...
     ├── python code/              # Markov regime-switching models & Wald hypothesis tests
-    │   ├── Markov.ipynb
-    │   ├── markov_reporting.py   # Final tables and report formatting
-    │   ├── markov_diagnostics.py # Supplementary conditional sensitivity checks
-    │   ├── verify_appendix_results.py # Optional numerical TeX verification
-    │   ├── ee_plot_resilience_2x3.py # Selected six-panel resilience figure
-    │   └── ...
+    │   ├── Markov.ipynb        # Complete self-contained Python workflow
+    │   ├── readme.txt
+    │   └── output/
     └── r code/                   # Descriptive statistics tables & figure rendering
         ├── ee_descriptive_statistics.r
         ├── ee_plot_for_resilience.r
         └── ...
-└── Fig/                        # MATLAB, R and Python figure exports
+└── Fig/                        # Generated figure exports
 ```
 
 Detailed instructions: [Code workflow](Energy%20Economics%20Code/readme.txt),
@@ -73,7 +70,7 @@ Detailed instructions: [Code workflow](Energy%20Economics%20Code/readme.txt),
   - Statistics and Machine Learning Toolbox
   - Spreadsheet I/O support
 - **Python (>= 3.9):**
-  - Packages: `jupyter`, `numpy`, `pandas`, `scipy`, `statsmodels`, `openpyxl`, `matplotlib`
+  - Packages: `jupyter`, `numpy`, `pandas`, `scipy`, `statsmodels`, `openpyxl`
 - **R (>= 4.0):**
   - Packages: `readxl`, `tseries`, `e1071`, `ggplot2`, `sysfonts`, `showtext`, `grid`
 
@@ -103,12 +100,12 @@ absent. See the R README for the exact font settings.
 ### Step 3: Estimate Markov Regime-Switching Models (Python)
 1. Start Jupyter Notebook in `Energy Economics Code/python code/`.
 2. Open and run all cells in `Markov.ipynb` sequentially.
-   - Six code stages fit each of the 30 two-state models once, then reuse the same fitted objects for coefficient tables, probabilities and Wald tests.
+   - The self-contained notebook has six code stages. It fits each of the 30 two-state models once, then reuses the same fitted objects for coefficient tables, probabilities and Wald tests. No local Python helper files are needed.
    - BH adjustment uses independent families of 30 conditional levels, 120 individual slopes and 30 joint-slope tests, matching the current main article and supplementary appendix.
    - Supplementary diagnostics retain full-sample smoothed state probabilities and standardization for linear HAC, weighted subsample and date-indicator checks. The primary indicator starts in January 2021, with March 2020 and February 2022 as alternatives; all use HAC(6).
    - Start with `python code/output/Markov_results.html` or `Markov_results.xlsx`; the notebook displays one final report with expandable coefficient tables.
    - Existing probability and test workbooks remain available for R and numerical inspection. Optimizer warnings, convergence flags and supplementary tables are retained in the final workbook.
-   - `verify_appendix_results.py` optionally checks the computed tables against supplied `main_J1108.tex` and `Supplementary_Appendix.tex` files. The manuscripts are not estimation inputs.
+   - Optional manuscript verification is built into Stage 6. Set `VERIFY_MANUSCRIPT=True`, `APPENDIX_TEX` and `MAIN_TEX` to compare against the supplied TeX files. The manuscripts are reference material, not estimation inputs.
 
 ### Step 4: Summary Tables and Figures (R)
 The R scripts locate `<project root>` by searching upward from a supplied
@@ -167,14 +164,6 @@ packages. Each block initializes its paths; Blocks 2-3 also read their dates.
 The comparison workbooks preserve the existing analysis inputs. To regenerate
 alternative horizons, synchronize the MATLAB horizon, response-point count,
 and first retained worksheet row as documented in the MATLAB README.
-
-The selected Python figure can also be generated with:
-
-```sh
-python3 "Energy Economics Code/python code/ee_plot_resilience_2x3.py"
-```
-
-It writes PDF, SVG and PNG files to `Fig/`. See its [layout guide](Energy%20Economics%20Code/python%20code/readme_resilience_2x3_wide.txt).
 
 ### Output locations
 

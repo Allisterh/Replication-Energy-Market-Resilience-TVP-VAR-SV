@@ -214,7 +214,7 @@ Both scripts passed R syntax parsing. After accounting for the documented
 project/input/output path changes and directory setup, the remaining executable
 syntax trees match the previous versions. Statistical expressions and data-panel settings are retained. The revised CPU event list excludes E16. The subsequent layout correction
 restores the original R event font size, compact labels and horizontal offsets
-for the remaining CPU events, with one vertical correction for E14; the Python figure's separate 7-point design is unchanged.
+for the remaining CPU events, with one vertical correction for E14.
 The horizon workbooks were copied byte for byte from the existing analysis.
 Existing reference PDFs were relocated without changing their contents.
 For the root-location fix, only the isolated path-setup expressions were
