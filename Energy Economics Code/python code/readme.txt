@@ -6,22 +6,20 @@ ENERGY ECONOMICS: SELF-CONTAINED MARKOV NOTEBOOK
 Markov.ipynb contains the complete Python workflow. There are no project-local
 .py dependencies. The folder's active contents are:
 
-  Markov.ipynb   Model estimation, tests, diagnostics, reporting and verification.
+  Markov.ipynb   Model estimation, state probabilities, Wald tests and final reporting.
   readme.txt    This guide.
   output/       Final reports and the existing R integration workbooks.
 
-Open Markov.ipynb, restart the kernel, and run all six code stages in order:
-  1. Find paths, load dependencies and define shared/report/verification helpers.
+Open Markov.ipynb, restart the kernel, and run all five code stages in order:
+  1. Find paths, load dependencies and define shared/report formatting helpers.
   2. Estimate final Markov models once and export the probabilities for R.
   3. Compute individual cross-state slope tests with raw p-values.
   4. Compute level, slope and joint Wald tests with separate BH families.
-  5. Compute the supplementary macrofinancial and conditional sensitivity checks.
-  6. Write the final report and optionally compare it against the TeX tables.
+  5. Write and display the final report.
 
 The first cell's helper definitions are collapsed by default; expand them for
-inspection. The numerical diagnostics are defined in Stage 5. The former
-markov_reporting, markov_diagnostics and verification helpers are embedded in
-the notebook; their numerical functions retain the same definitions.
+inspection. Model estimation, probabilities and all retained tests use the
+same fitted result objects. No external Python helper files are required.
 
 By default only the last stage displays a report. Complete coefficient tables
 can be expanded. Start with output/Markov_results.html or Markov_results.xlsx.
@@ -60,8 +58,7 @@ and Industrial, in that order. Market order and workbook mappings are:
 
 The original estimation alignment is retained: truncate to the shortest
 positional length, remove missing date/y/X jointly, then sort by date. Keep
-the supplied chronological ordering. Supplementary diagnostics attach X by
-date and explicitly verify that y and X equal the fitted model's observations.
+the supplied chronological ordering.
 
 3. MODEL SETTINGS AND STATE LABELS
 ----------------------------------
@@ -101,8 +98,8 @@ Displayed estimates use four decimals and z-statistics three decimals.
 Within-state stars use raw p-values; full numerical precision is preserved
 in the result objects and numerical workbook sheets.
 
-4. WALD TESTS AND SUPPLEMENTARY DIAGNOSTICS
-------------------------------------------
+4. CROSS-STATE WALD TESTS
+-------------------------
 All cross-state Wald tests use the full parameter covariance, including
 cross-state terms. BH adjustment uses three independent families under ALL:
   30 conditional-level tests; 120 individual slopes; 30 joint-slope tests.
@@ -110,51 +107,23 @@ Raw p-values and adjusted q-values are both retained. Baseline 5% BH rejection
 counts are 28, 11 and 9. Ten of the 11 individual differences concern CPI and
 one concerns Industrial. Use ALL to reproduce the paper's adjustment families.
 
-Stage 5 implements the three supplementary diagnostic tables:
-  - Fitted macrofinancial dispersion: compare sd(X_t' beta_s) over common X
-    observations in both states (ddof=0), then omit March-December 2020 while
-    keeping the coefficients fixed. Also count within-state and linear OLS-HAC
-    coefficient detections using unadjusted p-values.
-  - Weighted subsamples: for the original BH-significant slopes, retain the
-    full-sample state probabilities and standardization, then fit regressions
-    before 2021 and excluding March-December 2020. Removed rows become adjacent
-    in the retained-observation HAC calculation.
-  - Period indicators: fit state-weighted regressions with the intercept,
-    original four standardized variables, and a level indicator. January 2021
-    is the primary date; March 2020 and February 2022 are alternatives.
-
-Signed ratio = (beta_2,D - beta_1,D) / (beta_2,MS - beta_1,MS).
-Negative values indicate a sign reversal. Ratios are not explained-variance
-shares or causal contributions. These conditional sensitivity checks add no
-new cross-state equality tests, coefficient-change tests or BH adjustment.
-
-All weighted checks use full-sample smoothed probabilities, independently of
-the R probability-export flag, with the original numerical floor of 1e-6.
-Raw probability exports are unchanged. Non-finite probabilities raise an
-error. HAC uses six lags, the Bartlett kernel, no small-sample correction and
-normal-reference inference (use_t=False). Weighted statistics in parentheses
-are coefficients divided by their HAC standard errors.
-
-Baseline sample sizes are 166 in full, 131 before 2021 and 156 after excluding
-the ten 2020 months. Indicator-one counts are 45, 35 and 22. The no-indicator
-weighted slopes agree with the original Markov slopes within 0.002.
-All settings, sample counts and numerical alignment checks are exported.
+These are the tests retained in the updated manuscript: the main article's
+Panel C reports conditional-level and joint-slope comparisons, while Appendix
+Table tab:all_slope_tests reports the 120 individual slope comparisons. The
+core Wald/BH calculations and the fitted model specification are unchanged.
 
 5. OUTPUT FILES
 ----------------
 Main entry points:
   Markov_results.html
-    One readable report, with expandable coefficient and diagnostic tables.
+    One readable report, with expandable coefficient tables.
   Markov_results.xlsx
     Guide, Model_overview, six shock/measure coefficient sheets,
     Coefficients_numeric, Test_overview, Slope_differences, Level_differences,
     Joint_slope_tests, State_mapping, and Fit_warnings when needed.
-    Supplementary sheets: macro_summary, fitted_dispersion, linear_hac,
-    subsample_checks, period_indicator, indicator_dates, weighted_alignment,
-    diagnostic_samples and diagnostic_settings.
   Markov_run_manifest.json
-    Input hashes, model counts, BH families, convergence/warning counts and
-    supplementary settings. Input hashes are checked again before export.
+    Input hashes, model counts, BH families and convergence/warning counts.
+    Input hashes are checked again before export.
 
 Existing R integration and test files retain their names and schemas:
   gpr_ms_state_probabilities_state1.xlsx
@@ -174,31 +143,10 @@ columns remain available. Files ending _no100.xlsx are earlier alternatives,
 not default inputs or outputs. R reads the probability files from output/ and
 writes figures to the project-root Fig/ directory.
 
-6. OPTIONAL MANUSCRIPT VERIFICATION IN STAGE 6
----------------------------------------------
-Normal analysis needs no manuscript files. The verification functions are
-included in the same notebook. In Stage 6, change:
-
-  VERIFY_MANUSCRIPT = True
-  APPENDIX_TEX = Path("/path/to/Supplementary_Appendix.tex")
-  MAIN_TEX = Path("/path/to/main_J1108.tex")
-
-Then run Stage 6 again after the result objects have been computed. Set
-MAIN_TEX=None to check the appendix alone. A mismatch raises an error.
-There is no separate verification script or command-line dependency.
-
-The checker compares generated results to the three supplementary diagnostic
-tables, sample sizes, the weighted/Markov alignment bound and, when supplied,
-all main Panel C Wald statistics and BH stars. Numbers are checked at their
-displayed precision; p-value inequalities are checked as inequalities. The
-manuscripts supply reference values only and never enter estimation.
-
-Files written beside the result workbook:
-  Appendix_verification.csv   Every comparison and pass/fail status.
-  Appendix_verification.json  Counts and source-document SHA-256 hashes.
-
-The current baseline passes 384 appendix-only comparisons, or 504 with the
-main manuscript. The consolidated notebook was executed with the separate
-Python helpers removed; its estimates and numerical outputs match the prior
-version. Each model is still fitted once, and only the final report is shown
-by default.
+6. VALIDATION
+---------------
+The five-stage notebook was rerun using the same supplied inputs. Retained
+model estimates, probabilities and Wald/BH results were checked against the
+previous version and the current manuscript tables. Regression coefficients,
+state mapping, raw p-values and BH adjustment families remain unchanged.
+The final report contains only the retained results and fit-warning information.

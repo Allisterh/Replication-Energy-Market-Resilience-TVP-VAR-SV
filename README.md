@@ -100,12 +100,11 @@ absent. See the R README for the exact font settings.
 ### Step 3: Estimate Markov Regime-Switching Models (Python)
 1. Start Jupyter Notebook in `Energy Economics Code/python code/`.
 2. Open and run all cells in `Markov.ipynb` sequentially.
-   - The self-contained notebook has six code stages. It fits each of the 30 two-state models once, then reuses the same fitted objects for coefficient tables, probabilities and Wald tests. No local Python helper files are needed.
+   - The self-contained notebook has five code stages. It fits each of the 30 two-state models once, then reuses the same fitted objects for coefficient tables, probabilities and Wald tests. No local Python helper files are needed.
    - BH adjustment uses independent families of 30 conditional levels, 120 individual slopes and 30 joint-slope tests, matching the current main article and supplementary appendix.
-   - Supplementary diagnostics retain full-sample smoothed state probabilities and standardization for linear HAC, weighted subsample and date-indicator checks. The primary indicator starts in January 2021, with March 2020 and February 2022 as alternatives; all use HAC(6).
    - Start with `python code/output/Markov_results.html` or `Markov_results.xlsx`; the notebook displays one final report with expandable coefficient tables.
-   - Existing probability and test workbooks remain available for R and numerical inspection. Optimizer warnings, convergence flags and supplementary tables are retained in the final workbook.
-   - Optional manuscript verification is built into Stage 6. Set `VERIFY_MANUSCRIPT=True`, `APPENDIX_TEX` and `MAIN_TEX` to compare against the supplied TeX files. The manuscripts are reference material, not estimation inputs.
+   - The final workbook includes the current appendix's 120 individual slope comparisons.
+   - Existing probability and test workbooks remain available for R and numerical inspection. Optimizer warnings and convergence flags are retained in the final workbook.
 
 ### Step 4: Summary Tables and Figures (R)
 The R scripts locate `<project root>` by searching upward from a supplied

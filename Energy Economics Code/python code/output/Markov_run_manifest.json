@@ -29,18 +29,5 @@
       "Raw p < 0.05": 15,
       "BH q < 0.05": 9
     }
-  ],
-  "appendix_diagnostics": {
-    "selected_slope_differences": 11,
-    "primary_date": "2021-01-01",
-    "indicator_dates": [
-      "2020-03-01",
-      "2021-01-01",
-      "2022-02-01"
-    ],
-    "hac_lags": 6,
-    "probability_floor": 1e-06,
-    "max_weighted_markov_slope_difference": 0.0012000547441101475,
-    "state_process_reestimated": false
-  }
+  ]
 }
